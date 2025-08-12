@@ -210,7 +210,7 @@ export function Dashboard() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm">Tasks awaiting review (>48h)</span>
+              <span className="text-sm">Tasks awaiting review (&gt;48h)</span>
               <Badge variant="destructive">3</Badge>
             </div>
             <div className="flex items-center justify-between">
