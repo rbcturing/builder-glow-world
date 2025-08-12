@@ -59,10 +59,10 @@ export default function CreateTask() {
                   <Input id="task-id" placeholder="TSK-001" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
+                  <Label htmlFor="priority">Complexity</Label>
                   <Select>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select priority" />
+                      <SelectValue placeholder="Select complexity" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="low">Low</SelectItem>
