@@ -1,8 +1,14 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Target, CheckCircle2, AlertCircle, TrendingUp } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Target, CheckCircle2, AlertCircle, TrendingUp } from "lucide-react";
 
 export default function Calibration() {
   return (
@@ -10,7 +16,9 @@ export default function Calibration() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Calibration Center</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Calibration Center
+          </h1>
           <p className="text-muted-foreground">
             Final quality check before tasks enter the delivery batch
           </p>
@@ -25,7 +33,9 @@ export default function Calibration() {
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Awaiting Calibration</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Awaiting Calibration
+            </CardTitle>
             <AlertCircle className="w-4 h-4 text-info" />
           </CardHeader>
           <CardContent>
@@ -38,7 +48,9 @@ export default function Calibration() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Calibrated Today</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Calibrated Today
+            </CardTitle>
             <CheckCircle2 className="w-4 h-4 text-success" />
           </CardHeader>
           <CardContent>
@@ -79,7 +91,7 @@ export default function Calibration() {
             </div>
             <Progress value={94} className="h-2" />
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Consistency Rating</span>
@@ -87,7 +99,7 @@ export default function Calibration() {
             </div>
             <Progress value={89} className="h-2" />
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Completion Rate</span>
@@ -109,7 +121,9 @@ export default function Calibration() {
         <CardContent>
           <div className="text-center py-12">
             <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No tasks in calibration queue</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              No tasks in calibration queue
+            </h3>
             <p className="text-muted-foreground">
               Tasks will appear here after they pass the review stage
             </p>

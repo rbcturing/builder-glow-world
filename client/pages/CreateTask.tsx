@@ -1,11 +1,23 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Upload, FileText, Save, Send } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Upload, FileText, Save, Send } from "lucide-react";
 
 export default function CreateTask() {
   return (
@@ -64,13 +76,16 @@ export default function CreateTask() {
 
               <div className="space-y-2">
                 <Label htmlFor="title">Task Title</Label>
-                <Input id="title" placeholder="Enter a descriptive title for the task" />
+                <Input
+                  id="title"
+                  placeholder="Enter a descriptive title for the task"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
-                <Textarea 
-                  id="description" 
+                <Textarea
+                  id="description"
                   placeholder="Provide detailed instructions for this training task..."
                   className="min-h-[100px]"
                 />
@@ -84,11 +99,19 @@ export default function CreateTask() {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="text-analysis">Text Analysis</SelectItem>
-                      <SelectItem value="sentiment">Sentiment Analysis</SelectItem>
-                      <SelectItem value="classification">Classification</SelectItem>
+                      <SelectItem value="text-analysis">
+                        Text Analysis
+                      </SelectItem>
+                      <SelectItem value="sentiment">
+                        Sentiment Analysis
+                      </SelectItem>
+                      <SelectItem value="classification">
+                        Classification
+                      </SelectItem>
                       <SelectItem value="qa">Q&A Training</SelectItem>
-                      <SelectItem value="dialogue">Dialogue Training</SelectItem>
+                      <SelectItem value="dialogue">
+                        Dialogue Training
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -120,7 +143,7 @@ export default function CreateTask() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <Textarea 
+                <Textarea
                   placeholder={`{
   "task_type": "text_classification",
   "instructions": "Classify the sentiment of the given text",

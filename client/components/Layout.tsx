@@ -1,36 +1,46 @@
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  PlusCircle, 
-  ClipboardList, 
-  Target, 
-  Users, 
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import {
+  LayoutDashboard,
+  PlusCircle,
+  ClipboardList,
+  Target,
+  Users,
   Settings,
   CheckCircle2,
   Clock,
   AlertCircle,
-  Package
-} from 'lucide-react';
+  Package,
+} from "lucide-react";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Create Task', href: '/create', icon: PlusCircle },
-  { name: 'Review Queue', href: '/review', icon: ClipboardList },
-  { name: 'Calibration', href: '/calibration', icon: Target },
-  { name: 'Delivery Batch', href: '/delivery', icon: Package },
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Create Task", href: "/create", icon: PlusCircle },
+  { name: "Review Queue", href: "/review", icon: ClipboardList },
+  { name: "Calibration", href: "/calibration", icon: Target },
+  { name: "Delivery Batch", href: "/delivery", icon: Package },
 ];
 
 const statusItems = [
-  { name: 'In Progress', count: 12, icon: Clock, color: 'text-blue-600' },
-  { name: 'Pending Review', count: 8, icon: AlertCircle, color: 'text-warning' },
-  { name: 'Rework', count: 3, icon: AlertCircle, color: 'text-destructive' },
-  { name: 'Calibration', count: 5, icon: Target, color: 'text-info' },
-  { name: 'Delivery Batch', count: 15, icon: CheckCircle2, color: 'text-success' },
+  { name: "In Progress", count: 12, icon: Clock, color: "text-blue-600" },
+  {
+    name: "Pending Review",
+    count: 8,
+    icon: AlertCircle,
+    color: "text-warning",
+  },
+  { name: "Rework", count: 3, icon: AlertCircle, color: "text-destructive" },
+  { name: "Calibration", count: 5, icon: Target, color: "text-info" },
+  {
+    name: "Delivery Batch",
+    count: 15,
+    icon: CheckCircle2,
+    color: "text-success",
+  },
 ];
 
 export function Layout({ children }: LayoutProps) {
@@ -49,7 +59,7 @@ export function Layout({ children }: LayoutProps) {
                 </div>
                 <h1 className="text-xl font-bold text-foreground">TaskFlow</h1>
               </div>
-              
+
               <nav className="hidden md:flex items-center space-x-8">
                 {navigation.map((item) => {
                   const Icon = item.icon;
@@ -58,10 +68,10 @@ export function Layout({ children }: LayoutProps) {
                       key={item.name}
                       to={item.href}
                       className={cn(
-                        'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                        "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
                         location.pathname === item.href
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent",
                       )}
                     >
                       <Icon className="w-4 h-4" />
@@ -97,12 +107,19 @@ export function Layout({ children }: LayoutProps) {
                   {statusItems.map((item) => {
                     const Icon = item.icon;
                     return (
-                      <div key={item.name} className="flex items-center justify-between p-3 bg-card rounded-lg border">
+                      <div
+                        key={item.name}
+                        className="flex items-center justify-between p-3 bg-card rounded-lg border"
+                      >
                         <div className="flex items-center gap-3">
                           <Icon className={cn("w-4 h-4", item.color)} />
-                          <span className="text-sm font-medium">{item.name}</span>
+                          <span className="text-sm font-medium">
+                            {item.name}
+                          </span>
                         </div>
-                        <span className="text-lg font-bold text-foreground">{item.count}</span>
+                        <span className="text-lg font-bold text-foreground">
+                          {item.count}
+                        </span>
                       </div>
                     );
                   })}
@@ -113,9 +130,7 @@ export function Layout({ children }: LayoutProps) {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 px-6 py-8 lg:px-8">
-          {children}
-        </main>
+        <main className="flex-1 px-6 py-8 lg:px-8">{children}</main>
       </div>
     </div>
   );

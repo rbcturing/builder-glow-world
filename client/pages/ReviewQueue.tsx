@@ -1,34 +1,46 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, Check, X, Clock, Search, Filter } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Eye, Check, X, Clock, Search, Filter } from "lucide-react";
 
 const pendingTasks = [
   {
-    id: 'TSK-001',
-    title: 'Customer Support Response Analysis',
-    trainer: 'Sarah Johnson',
-    priority: 'high',
-    created: '2 hours ago',
-    category: 'Text Analysis',
+    id: "TSK-001",
+    title: "Customer Support Response Analysis",
+    trainer: "Sarah Johnson",
+    priority: "high",
+    created: "2 hours ago",
+    category: "Text Analysis",
   },
   {
-    id: 'TSK-003',
-    title: 'Email Template Optimization',
-    trainer: 'Mike Chen',
-    priority: 'medium',
-    created: '4 hours ago',
-    category: 'Classification',
+    id: "TSK-003",
+    title: "Email Template Optimization",
+    trainer: "Mike Chen",
+    priority: "medium",
+    created: "4 hours ago",
+    category: "Classification",
   },
   {
-    id: 'TSK-005',
-    title: 'Sentiment Analysis Training',
-    trainer: 'Emma Wilson',
-    priority: 'low',
-    created: '1 day ago',
-    category: 'Sentiment',
+    id: "TSK-005",
+    title: "Sentiment Analysis Training",
+    trainer: "Emma Wilson",
+    priority: "low",
+    created: "1 day ago",
+    category: "Sentiment",
   },
 ];
 
@@ -93,7 +105,15 @@ export default function ReviewQueue() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <h3 className="font-semibold">{task.title}</h3>
-                    <Badge variant={task.priority === 'high' ? 'destructive' : task.priority === 'medium' ? 'default' : 'secondary'}>
+                    <Badge
+                      variant={
+                        task.priority === "high"
+                          ? "destructive"
+                          : task.priority === "medium"
+                            ? "default"
+                            : "secondary"
+                      }
+                    >
                       {task.priority}
                     </Badge>
                     <Badge variant="outline">{task.category}</Badge>

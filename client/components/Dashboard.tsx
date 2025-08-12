@@ -1,80 +1,115 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { 
-  TrendingUp, 
-  Users, 
-  Clock, 
-  CheckCircle2, 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  TrendingUp,
+  Users,
+  Clock,
+  CheckCircle2,
   AlertTriangle,
   Target,
   Package,
   Plus,
   Eye,
-  ArrowUpRight
-} from 'lucide-react';
+  ArrowUpRight,
+} from "lucide-react";
 
 const taskMetrics = [
-  { title: 'Total Tasks', value: '247', change: '+12%', icon: Package, color: 'text-blue-600' },
-  { title: 'Completed Today', value: '18', change: '+8%', icon: CheckCircle2, color: 'text-success' },
-  { title: 'Pending Review', value: '32', change: '-5%', icon: Clock, color: 'text-warning' },
-  { title: 'Active Users', value: '12', change: '+2%', icon: Users, color: 'text-info' },
+  {
+    title: "Total Tasks",
+    value: "247",
+    change: "+12%",
+    icon: Package,
+    color: "text-blue-600",
+  },
+  {
+    title: "Completed Today",
+    value: "18",
+    change: "+8%",
+    icon: CheckCircle2,
+    color: "text-success",
+  },
+  {
+    title: "Pending Review",
+    value: "32",
+    change: "-5%",
+    icon: Clock,
+    color: "text-warning",
+  },
+  {
+    title: "Active Users",
+    value: "12",
+    change: "+2%",
+    icon: Users,
+    color: "text-info",
+  },
 ];
 
 const recentTasks = [
   {
-    id: 'TSK-001',
-    title: 'Customer Support Response Analysis',
-    trainer: 'Sarah Johnson',
-    status: 'pending_review',
-    priority: 'high',
-    created: '2 hours ago',
+    id: "TSK-001",
+    title: "Customer Support Response Analysis",
+    trainer: "Sarah Johnson",
+    status: "pending_review",
+    priority: "high",
+    created: "2 hours ago",
   },
   {
-    id: 'TSK-002',
-    title: 'Product Description Enhancement',
-    trainer: 'Mike Chen',
-    status: 'calibration',
-    priority: 'medium',
-    created: '4 hours ago',
+    id: "TSK-002",
+    title: "Product Description Enhancement",
+    trainer: "Mike Chen",
+    status: "calibration",
+    priority: "medium",
+    created: "4 hours ago",
   },
   {
-    id: 'TSK-003',
-    title: 'Email Template Optimization',
-    trainer: 'Emma Wilson',
-    status: 'in_progress',
-    priority: 'low',
-    created: '1 day ago',
+    id: "TSK-003",
+    title: "Email Template Optimization",
+    trainer: "Emma Wilson",
+    status: "in_progress",
+    priority: "low",
+    created: "1 day ago",
   },
   {
-    id: 'TSK-004',
-    title: 'Chat Bot Training Data',
-    trainer: 'Alex Rivera',
-    status: 'rework',
-    priority: 'high',
-    created: '2 days ago',
+    id: "TSK-004",
+    title: "Chat Bot Training Data",
+    trainer: "Alex Rivera",
+    status: "rework",
+    priority: "high",
+    created: "2 days ago",
   },
 ];
 
 const getStatusBadge = (status: string) => {
   const variants = {
-    'pending_review': { label: 'Pending Review', variant: 'secondary' as const },
-    'calibration': { label: 'Calibration', variant: 'default' as const },
-    'in_progress': { label: 'In Progress', variant: 'outline' as const },
-    'rework': { label: 'Rework', variant: 'destructive' as const },
-    'approved': { label: 'Approved', variant: 'secondary' as const },
+    pending_review: { label: "Pending Review", variant: "secondary" as const },
+    calibration: { label: "Calibration", variant: "default" as const },
+    in_progress: { label: "In Progress", variant: "outline" as const },
+    rework: { label: "Rework", variant: "destructive" as const },
+    approved: { label: "Approved", variant: "secondary" as const },
   };
-  return variants[status as keyof typeof variants] || { label: status, variant: 'outline' as const };
+  return (
+    variants[status as keyof typeof variants] || {
+      label: status,
+      variant: "outline" as const,
+    }
+  );
 };
 
 const getPriorityColor = (priority: string) => {
   const colors = {
-    high: 'text-red-600',
-    medium: 'text-yellow-600',
-    low: 'text-green-600',
+    high: "text-red-600",
+    medium: "text-yellow-600",
+    low: "text-green-600",
   };
-  return colors[priority as keyof typeof colors] || 'text-gray-600';
+  return colors[priority as keyof typeof colors] || "text-gray-600";
 };
 
 export function Dashboard() {
@@ -109,10 +144,16 @@ export function Dashboard() {
               <CardContent>
                 <div className="text-2xl font-bold">{metric.value}</div>
                 <p className="text-xs text-muted-foreground">
-                  <span className={metric.change.startsWith('+') ? 'text-success' : 'text-destructive'}>
+                  <span
+                    className={
+                      metric.change.startsWith("+")
+                        ? "text-success"
+                        : "text-destructive"
+                    }
+                  >
                     {metric.change}
-                  </span>
-                  {' '}from last week
+                  </span>{" "}
+                  from last week
                 </p>
               </CardContent>
             </Card>
@@ -139,14 +180,18 @@ export function Dashboard() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Review to Calibration</span>
+                <span className="text-sm font-medium">
+                  Review to Calibration
+                </span>
                 <span className="text-sm text-muted-foreground">60%</span>
               </div>
               <Progress value={60} className="h-2" />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Calibration to Delivery</span>
+                <span className="text-sm font-medium">
+                  Calibration to Delivery
+                </span>
                 <span className="text-sm text-muted-foreground">85%</span>
               </div>
               <Progress value={85} className="h-2" />
@@ -174,12 +219,19 @@ export function Dashboard() {
             {recentTasks.map((task) => {
               const statusInfo = getStatusBadge(task.status);
               return (
-                <div key={task.id} className="flex items-center justify-between p-4 bg-accent/50 rounded-lg">
+                <div
+                  key={task.id}
+                  className="flex items-center justify-between p-4 bg-accent/50 rounded-lg"
+                >
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
                       <h4 className="font-medium">{task.title}</h4>
-                      <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
-                      <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>
+                      <Badge variant={statusInfo.variant}>
+                        {statusInfo.label}
+                      </Badge>
+                      <span
+                        className={`text-xs font-medium ${getPriorityColor(task.priority)}`}
+                      >
                         {task.priority.toUpperCase()}
                       </span>
                     </div>
