@@ -86,7 +86,15 @@ export default function CreateTask() {
                 <Label htmlFor="database">Database</Label>
                 <Input
                   id="database"
-                  placeholder="Enter a descriptive title for the task"
+                  placeholder="Enter the database name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="database">Interface</Label>
+                <Input
+                  id="database"
+                  placeholder="Enter the interface number"
                 />
               </div>
 
