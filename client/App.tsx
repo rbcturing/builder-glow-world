@@ -16,27 +16,38 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/create" element={<CreateTask />} />
-            <Route path="/review" element={<ReviewQueue />} />
-            <Route path="/calibration" element={<Calibration />} />
-            <Route path="/delivery" element={<DeliveryBatch />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/create" element={<CreateTask />} />
+              <Route path="/review" element={<ReviewQueue />} />
+              <Route path="/calibration" element={<Calibration />} />
+              <Route path="/delivery" element={<DeliveryBatch />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
-const container = document.getElementById("root")!;
-const root = createRoot(container);
-root.render(<App />);
+// Only create root once
+let root: ReturnType<typeof createRoot> | null = null;
+
+function initializeApp() {
+  const container = document.getElementById("root")!;
+  if (!root) {
+    root = createRoot(container);
+  }
+  root.render(<App />);
+}
+
+initializeApp();
