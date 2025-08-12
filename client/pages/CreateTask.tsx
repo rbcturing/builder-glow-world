@@ -83,6 +83,14 @@ export default function CreateTask() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="database">Database</Label>
+                <Input
+                  id="database"
+                  placeholder="Enter a descriptive title for the task"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
