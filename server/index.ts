@@ -65,6 +65,7 @@ export function createServer() {
 
   // Database Utilities routes
   app.post("/api/database_utilities_prompt_generation", handleDatabaseUtilitiesPromptGeneration);
+  app.post("/api/database_utilities", handleDatabaseUtilities);
 
   return app;
 }
