@@ -72,7 +72,7 @@ export function Layout({ children }: LayoutProps) {
                 <h1 className="text-xl font-bold text-foreground">TaskFlow</h1>
               </div>
 
-              <nav className="hidden md:flex items-center space-x-8">
+              <nav className="hidden md:flex items-center space-x-2">
                 {navigation.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -80,13 +80,13 @@ export function Layout({ children }: LayoutProps) {
                       key={item.name}
                       to={item.href}
                       className={cn(
-                        "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                        "flex items-center gap-1 px-2 py-2 text-xs font-medium rounded-md transition-colors whitespace-nowrap",
                         location.pathname === item.href
                           ? "bg-primary text-primary-foreground"
                           : "text-muted-foreground hover:text-foreground hover:bg-accent",
                       )}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-3 h-3" />
                       {item.name}
                     </Link>
                   );
