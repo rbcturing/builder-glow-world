@@ -96,13 +96,13 @@ export default function InterfaceConnections() {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-white">
       {/* Header - Matching Dashboard Style */}
-      <div className="absolute top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20 p-4">
+      <div className="absolute top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-gray-300 p-4">
         <div className="flex items-center justify-center">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-primary-foreground font-bold">T</span>
             </div>
-            <h1 className="text-xl font-bold text-white drop-shadow-md">Interface Connections</h1>
+            <h1 className="text-xl font-bold text-gray-800 drop-shadow-sm">Interface Connections</h1>
           </div>
         </div>
       </div>

@@ -17,22 +17,36 @@ import {
   Database,
   Network,
   FileCheck,
+  ChevronDown,
+  Menu,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Create Task", href: "/create", icon: PlusCircle },
-  { name: "Review Queue", href: "/review", icon: ClipboardList },
+// Primary navigation items (always visible)
+const primaryNavigation = [
   { name: "Task Framework", href: "/framework", icon: Zap },
   { name: "Task Tracker", href: "/tracker", icon: BarChart3 },
   { name: "Chain Analyzer", href: "/chain-analyzer", icon: LinkIcon },
   { name: "DB Connections", href: "/db-connections", icon: Database },
   { name: "Interface Connections", href: "/interface-connections", icon: Network },
   { name: "Instruction Validation", href: "/instruction-validation", icon: FileCheck },
+];
+
+// Secondary navigation items (in dropdown)
+const secondaryNavigation = [
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Create Task", href: "/create", icon: PlusCircle },
+  { name: "Review Queue", href: "/review", icon: ClipboardList },
   { name: "Calibration", href: "/calibration", icon: Target },
   { name: "Delivery Batch", href: "/delivery", icon: Package },
 ];
@@ -73,7 +87,7 @@ export function Layout({ children }: LayoutProps) {
               </div>
 
               <nav className="hidden md:flex items-center space-x-2">
-                {navigation.map((item) => {
+                {primaryNavigation.map((item) => {
                   const Icon = item.icon;
                   return (
                     <Link
@@ -91,6 +105,33 @@ export function Layout({ children }: LayoutProps) {
                     </Link>
                   );
                 })}
+                
+                {/* More menu dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="px-2 py-2 text-xs">
+                      <Menu className="w-3 h-3 mr-1" />
+                      More
+                      <ChevronDown className="w-3 h-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    {secondaryNavigation.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link
+                            to={item.href}
+                            className="flex items-center gap-2 w-full"
+                          >
+                            <Icon className="w-4 h-4" />
+                            {item.name}
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </nav>
             </div>
 
