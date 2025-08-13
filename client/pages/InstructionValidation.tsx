@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -7,7 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -18,41 +17,70 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { 
   CheckCircle, 
-  AlertCircle, 
-  XCircle, 
   Zap, 
   FileText,
-  Lightbulb,
-  Target
+  Target,
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface ValidationResult {
-  isValid: boolean;
-  score: number;
-  feedback: string[];
-  suggestions: string[];
-  errors: string[];
-}
-
 export default function InstructionValidation() {
+  const [initialPrompt, setInitialPrompt] = useState("");
+  const [examples, setExamples] = useState("");
+  const [policy, setPolicy] = useState("");
   const [instruction, setInstruction] = useState("");
-  const [environment, setEnvironment] = useState("");
-  const [interface_, setInterface] = useState("");
-  const [taskType, setTaskType] = useState("");
-  const [validation, setValidation] = useState<ValidationResult | null>(null);
+  const [model, setModel] = useState("claude-3-5-sonnet-20241022");
+  const [validationResult, setValidationResult] = useState("");
   const [isValidating, setIsValidating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const { toast } = useToast();
 
+  // Load initial prompt and examples on component mount
+  useEffect(() => {
+    const fetchInitialPrompt = async () => {
+      try {
+        const response = await fetch("/api/validate/instruction", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "fetch_initial_prompt"
+          }),
+        });
+
+        const data = await response.json();
+        if (data.status === "success") {
+          setInitialPrompt(data.initial_prompt || "");
+          setExamples(data.examples || "");
+        }
+      } catch (error) {
+        console.error("Failed to fetch initial prompt:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInitialPrompt();
+  }, []);
+
   const validateInstruction = async () => {
-    if (!instruction.trim()) {
+    if (!initialPrompt || !policy || !instruction) {
       toast({
         title: "Error",
-        description: "Please enter an instruction to validate",
+        description: "Please fill in all required fields before validating.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!model) {
+      toast({
+        title: "Error", 
+        description: "Please select a model before validating.",
         variant: "destructive",
       });
       return;
@@ -66,20 +94,22 @@ export default function InstructionValidation() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          instruction,
-          environment,
-          interface: interface_,
-          taskType,
+          action: "validate_instruction",
+          initial_prompt: initialPrompt,
+          policy: policy,
+          instruction: instruction,
+          model: model,
+          examples: examples
         }),
       });
 
       const data = await response.json();
 
       if (data.status === "success") {
-        setValidation(data.validation);
+        setValidationResult(data.validation_result);
         toast({
           title: "Validation Complete",
-          description: `Score: ${data.validation.score}/100`,
+          description: "Instruction validated successfully",
         });
       } else {
         toast({
@@ -131,283 +161,135 @@ export default function InstructionValidation() {
     setInstruction(instruction);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center gap-2">
+          <RefreshCw className="w-5 h-5 animate-spin" />
+          <span>Loading initial prompt...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Instruction Validation</h1>
-          <p className="text-muted-foreground">
-            Validate and improve your task instructions for better AI performance
-          </p>
+      {/* Header - Matching Dashboard Style */}
+      <div className="text-center space-y-4">
+        <div className="flex justify-center">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <CheckCircle className="w-12 h-12 text-white" />
+          </div>
         </div>
-        <Badge variant="outline" className="flex items-center gap-2">
-          <Target className="w-4 h-4" />
-          Instruction Quality Checker
-        </Badge>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Instruction Validation
+        </h1>
+        <div className="flex items-center justify-center gap-4">
+          <div className="h-px w-16 bg-gradient-to-r from-transparent to-blue-500"></div>
+          <span className="text-sm uppercase tracking-wider text-muted-foreground">
+            Validation & Quality Assurance
+          </span>
+          <div className="h-px w-16 bg-gradient-to-l from-transparent to-blue-500"></div>
+        </div>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Ensure your instructions meet the highest standards.
+        </p>
       </div>
 
-      {/* Example Instructions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lightbulb className="w-5 h-5" />
-            Example Instructions
-          </CardTitle>
-          <CardDescription>
-            Click on an example to load it for validation
-          </CardDescription>
+      {/* Main Content Card - Matching Dashboard Layout */}
+      <Card className="max-w-4xl mx-auto">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Instruction Validation</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            {exampleInstructions.map((example, index) => (
-              <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow">
-                <CardContent className="pt-4">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-sm">{example.title}</h4>
-                    <p className="text-xs text-muted-foreground line-clamp-3">
-                      {example.instruction}
-                    </p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => loadExample(example.instruction)}
-                      className="w-full"
-                    >
-                      Load Example
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Instruction Input */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Instruction to Validate
-          </CardTitle>
-          <CardDescription>
-            Enter the instruction you want to validate and improve
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Model Selection */}
           <div className="space-y-2">
-            <Label htmlFor="instruction">Instruction Text</Label>
+            <Label className="text-base font-semibold">Select Anthropic Model</Label>
+            <Select value={model} onValueChange={setModel}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a model" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="claude-3-5-sonnet-20241022">claude-3-5-sonnet</SelectItem>
+                <SelectItem value="claude-3-5-haiku-20241022">claude-3-5-haiku</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Initial Prompt */}
+          <div className="space-y-2">
+            <Label className="text-base font-semibold">Initial Prompt</Label>
             <Textarea
-              id="instruction"
-              placeholder="Enter your task instruction here..."
+              value={initialPrompt}
+              onChange={(e) => setInitialPrompt(e.target.value)}
+              placeholder="Enter the initial task prompt here..."
+              className="min-h-[200px] resize-none"
+            />
+          </div>
+
+          {/* Examples */}
+          <div className="space-y-2">
+            <Label className="text-base font-semibold">Examples</Label>
+            <Textarea
+              value={examples}
+              onChange={(e) => setExamples(e.target.value)}
+              placeholder="Enter examples for validation..."
+              className="min-h-[200px] resize-none"
+            />
+          </div>
+
+          {/* Instruction */}
+          <div className="space-y-2">
+            <Label className="text-base font-semibold">Instruction</Label>
+            <Textarea
               value={instruction}
               onChange={(e) => setInstruction(e.target.value)}
-              className="min-h-[150px]"
+              placeholder="Enter the instruction to validate..."
+              className="min-h-[200px] resize-none"
             />
-            <div className="text-xs text-muted-foreground">
-              Character count: {instruction.length}
-            </div>
           </div>
 
-          {/* Optional Context Fields */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="environment">Environment (Optional)</Label>
-              <Input
-                id="environment"
-                placeholder="e.g., hr_payroll, finance"
-                value={environment}
-                onChange={(e) => setEnvironment(e.target.value)}
+          {/* Policy */}
+          <div className="space-y-2">
+            <Label className="text-base font-semibold">Policy</Label>
+            <Textarea
+              value={policy}
+              onChange={(e) => setPolicy(e.target.value)}
+              placeholder="Enter the policy to validate against..."
+              className="min-h-[200px] resize-none"
+            />
+          </div>
+
+          {/* Validate Button */}
+          <div className="flex justify-center pt-4">
+            <Button
+              onClick={validateInstruction}
+              disabled={isValidating || !initialPrompt || !policy || !instruction}
+              className="px-8 py-3 text-lg font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              size="lg"
+            >
+              {isValidating ? (
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  Validating...
+                </div>
+              ) : (
+                "Validate Instruction"
+              )}
+            </Button>
+          </div>
+
+          {/* Validation Result */}
+          {validationResult && (
+            <div className="space-y-2 pt-6">
+              <Label className="text-base font-semibold">LLM Response</Label>
+              <Textarea
+                value={validationResult}
+                readOnly
+                className="min-h-[200px] resize-none bg-muted"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="interface">Interface (Optional)</Label>
-              <Select value={interface_} onValueChange={setInterface}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select interface" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">Interface 1</SelectItem>
-                  <SelectItem value="2">Interface 2</SelectItem>
-                  <SelectItem value="3">Interface 3</SelectItem>
-                  <SelectItem value="4">Interface 4</SelectItem>
-                  <SelectItem value="5">Interface 5</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="task-type">Task Type (Optional)</Label>
-              <Select value={taskType} onValueChange={setTaskType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select task type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="classification">Classification</SelectItem>
-                  <SelectItem value="sentiment">Sentiment Analysis</SelectItem>
-                  <SelectItem value="extraction">Data Extraction</SelectItem>
-                  <SelectItem value="summarization">Summarization</SelectItem>
-                  <SelectItem value="qa">Question Answering</SelectItem>
-                  <SelectItem value="generation">Text Generation</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <Button 
-            onClick={validateInstruction}
-            disabled={isValidating || !instruction.trim()}
-            className="w-full"
-            size="lg"
-          >
-            <Zap className="w-4 h-4 mr-2" />
-            {isValidating ? "Validating..." : "Validate Instruction"}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Validation Results */}
-      {validation && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {validation.isValid ? (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                ) : (
-                  <XCircle className="w-5 h-5 text-red-500" />
-                )}
-                Validation Results
-              </div>
-              <Badge className={getScoreBadge(validation.score).color}>
-                {getScoreBadge(validation.score).label}
-              </Badge>
-            </CardTitle>
-            <CardDescription>
-              Overall Quality Score: {validation.score}/100
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Score Progress */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label>Quality Score</Label>
-                <span className={`font-bold ${getScoreColor(validation.score)}`}>
-                  {validation.score}/100
-                </span>
-              </div>
-              <Progress value={validation.score} className="w-full" />
-            </div>
-
-            {/* Errors */}
-            {validation.errors.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <XCircle className="w-4 h-4 text-red-500" />
-                  <h4 className="font-semibold text-red-600">Errors ({validation.errors.length})</h4>
-                </div>
-                <div className="space-y-2">
-                  {validation.errors.map((error, index) => (
-                    <div key={index} className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <XCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-red-700">{error}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Suggestions */}
-            {validation.suggestions.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-yellow-500" />
-                  <h4 className="font-semibold text-yellow-600">Suggestions ({validation.suggestions.length})</h4>
-                </div>
-                <div className="space-y-2">
-                  {validation.suggestions.map((suggestion, index) => (
-                    <div key={index} className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <Lightbulb className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-yellow-700">{suggestion}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Positive Feedback */}
-            {validation.feedback.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <h4 className="font-semibold text-green-600">Positive Feedback ({validation.feedback.length})</h4>
-                </div>
-                <div className="space-y-2">
-                  {validation.feedback.map((feedback, index) => (
-                    <div key={index} className="flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-green-700">{feedback}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Validation Summary */}
-            <div className="p-4 bg-muted rounded-lg">
-              <h4 className="font-semibold mb-2">Validation Summary</h4>
-              <div className="grid gap-2 md:grid-cols-3 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Status:</span>
-                  <span className={`ml-2 font-medium ${validation.isValid ? 'text-green-600' : 'text-red-600'}`}>
-                    {validation.isValid ? 'Valid' : 'Needs Improvement'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Errors:</span>
-                  <span className="ml-2 font-medium text-red-600">{validation.errors.length}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Suggestions:</span>
-                  <span className="ml-2 font-medium text-yellow-600">{validation.suggestions.length}</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Validation Tips */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5" />
-            Tips for Better Instructions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-3">
-              <h4 className="font-semibold text-green-600">✅ Do</h4>
-              <ul className="space-y-1 text-sm">
-                <li>• Be specific and clear about the expected output</li>
-                <li>• Include examples when possible</li>
-                <li>• Specify the output format (JSON, list, etc.)</li>
-                <li>• Use action verbs (analyze, classify, extract)</li>
-                <li>• Add constraints and requirements</li>
-              </ul>
-            </div>
-            <div className="space-y-3">
-              <h4 className="font-semibold text-red-600">❌ Don't</h4>
-              <ul className="space-y-1 text-sm">
-                <li>• Use ambiguous language (maybe, might, could)</li>
-                <li>• Make instructions too short or vague</li>
-                <li>• Forget to specify output requirements</li>
-                <li>• Use overly complex sentences</li>
-                <li>• Leave room for multiple interpretations</li>
-              </ul>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>

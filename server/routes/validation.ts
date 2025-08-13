@@ -1,38 +1,85 @@
 import { Request, Response } from "express";
-
-interface ValidationRequest {
-  instruction: string;
-  environment?: string;
-  interface?: string;
-  taskType?: string;
-}
-
-interface ValidationResponse {
-  isValid: boolean;
-  score: number;
-  feedback: string[];
-  suggestions: string[];
-  errors: string[];
-}
+import * as fs from "fs";
+import * as path from "path";
 
 export async function handleInstructionValidation(req: Request, res: Response) {
   try {
-    const { instruction, environment, interface: interfaceNum, taskType }: ValidationRequest = req.body;
-
-    if (!instruction || instruction.trim().length === 0) {
+    const data = req.body;
+    const action = data.action;
+    
+    if (!action) {
       return res.status(400).json({
         status: 'error',
-        message: 'Instruction text is required'
+        message: 'Action is required'
       });
     }
-
-    // Perform validation checks
-    const validation = validateInstruction(instruction, { environment, interface: interfaceNum, taskType });
-
-    return res.json({
-      status: 'success',
-      validation
-    });
+    
+    if (action === "fetch_initial_prompt") {
+      const initialPromptFilePath = path.join(process.cwd(), "prompts/instruction_validator/initial_prompt.txt");
+      
+      if (!fs.existsSync(initialPromptFilePath)) {
+        return res.status(404).json({
+          status: 'error',
+          message: `Initial prompt file for ${action} not found`
+        });
+      }
+      
+      const initialPrompt = fs.readFileSync(initialPromptFilePath, 'utf8');
+      
+      const examplesFilePath = path.join(process.cwd(), "prompts/instruction_validator/examples.txt");
+      let examples = "";
+      
+      if (fs.existsSync(examplesFilePath)) {
+        examples = fs.readFileSync(examplesFilePath, 'utf8');
+      }
+      
+      return res.json({
+        status: 'success',
+        initial_prompt: initialPrompt,
+        examples: examples
+      });
+    }
+    
+    else if (action === "validate_instruction") {
+      const initialPrompt = data.initial_prompt || '';
+      const examples = data.examples || '';
+      const policy = data.policy || '';
+      const instruction = data.instruction || '';
+      const model = data.model || '';
+      
+      if (!initialPrompt || !policy) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Initial prompt and policy are required'
+        });
+      }
+      
+      const prompt = initialPrompt.replace('{policy}', policy)
+                                 .replace('{instruction}', instruction)
+                                 .replace('{examples}', examples || "");
+      
+      try {
+        // Call Claude API (you'll need to implement this function)
+        const validationResult = await callClaude(prompt, model);
+        
+        return res.json({
+          status: 'success',
+          validation_result: validationResult
+        });
+      } catch (error) {
+        return res.status(500).json({
+          status: 'error',
+          message: `Failed to validate instruction: ${error instanceof Error ? error.message : 'Unknown error'}`
+        });
+      }
+    }
+    
+    else {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid action'
+      });
+    }
 
   } catch (error) {
     console.error('Error in handleInstructionValidation:', error);
@@ -43,138 +90,26 @@ export async function handleInstructionValidation(req: Request, res: Response) {
   }
 }
 
-function validateInstruction(instruction: string, context: { environment?: string, interface?: string, taskType?: string }): ValidationResponse {
-  const feedback: string[] = [];
-  const suggestions: string[] = [];
-  const errors: string[] = [];
-  let score = 100;
+// Placeholder for Claude API call - you'll need to implement this
+async function callClaude(prompt: string, model: string): Promise<string> {
+  // This is a placeholder implementation
+  // You'll need to implement the actual Claude API call here
+  // For now, return a mock response
+  return `Mock validation result for prompt: ${prompt.substring(0, 100)}...
 
-  // Check instruction length
-  if (instruction.length < 20) {
-    errors.push("Instruction is too short (minimum 20 characters)");
-    score -= 20;
-  } else if (instruction.length < 50) {
-    feedback.push("Consider providing more detailed instructions");
-    score -= 10;
-  }
+This is a simulated Claude response for instruction validation.
 
-  if (instruction.length > 1000) {
-    feedback.push("Instruction is quite long - consider breaking it down");
-    score -= 5;
-  }
+**Analysis:**
+- The instruction appears to be well-structured
+- Clear action verbs are present
+- Output format could be more specific
 
-  // Check for clarity indicators
-  const clarityKeywords = ['clearly', 'specifically', 'exactly', 'precisely', 'step by step'];
-  const hasClarityKeywords = clarityKeywords.some(keyword => 
-    instruction.toLowerCase().includes(keyword)
-  );
-  
-  if (!hasClarityKeywords) {
-    suggestions.push("Consider adding clarity keywords like 'clearly', 'specifically', or 'exactly'");
-    score -= 5;
-  }
+**Recommendations:**
+1. Consider adding more specific examples
+2. Define the expected output format more clearly
+3. Add constraints to guide the response
 
-  // Check for action verbs
-  const actionVerbs = ['analyze', 'classify', 'identify', 'extract', 'determine', 'evaluate', 'compare', 'summarize'];
-  const hasActionVerbs = actionVerbs.some(verb => 
-    instruction.toLowerCase().includes(verb)
-  );
-
-  if (!hasActionVerbs) {
-    suggestions.push("Include clear action verbs to specify what needs to be done");
-    score -= 10;
-  }
-
-  // Check for examples or context
-  const hasExamples = instruction.toLowerCase().includes('example') || 
-                     instruction.toLowerCase().includes('for instance') ||
-                     instruction.toLowerCase().includes('such as');
-  
-  if (!hasExamples) {
-    suggestions.push("Consider adding examples to clarify the expected output");
-    score -= 5;
-  }
-
-  // Check for output format specification
-  const hasOutputFormat = instruction.toLowerCase().includes('format') ||
-                         instruction.toLowerCase().includes('structure') ||
-                         instruction.toLowerCase().includes('json') ||
-                         instruction.toLowerCase().includes('list') ||
-                         instruction.toLowerCase().includes('table');
-
-  if (!hasOutputFormat) {
-    suggestions.push("Specify the expected output format (JSON, list, etc.)");
-    score -= 10;
-  }
-
-  // Context-specific validations
-  if (context.taskType) {
-    switch (context.taskType.toLowerCase()) {
-      case 'classification':
-        if (!instruction.toLowerCase().includes('categor') && !instruction.toLowerCase().includes('class')) {
-          feedback.push("For classification tasks, mention categories or classes");
-          score -= 5;
-        }
-        break;
-      case 'sentiment':
-        if (!instruction.toLowerCase().includes('sentiment') && !instruction.toLowerCase().includes('emotion')) {
-          feedback.push("For sentiment analysis, explicitly mention sentiment or emotions");
-          score -= 5;
-        }
-        break;
-      case 'extraction':
-        if (!instruction.toLowerCase().includes('extract') && !instruction.toLowerCase().includes('find')) {
-          feedback.push("For extraction tasks, use clear extraction verbs");
-          score -= 5;
-        }
-        break;
-    }
-  }
-
-  // Check for ambiguous language
-  const ambiguousWords = ['maybe', 'perhaps', 'might', 'could be', 'possibly'];
-  const hasAmbiguousLanguage = ambiguousWords.some(word => 
-    instruction.toLowerCase().includes(word)
-  );
-
-  if (hasAmbiguousLanguage) {
-    errors.push("Avoid ambiguous language - be definitive in instructions");
-    score -= 15;
-  }
-
-  // Check for completeness
-  const hasConstraints = instruction.toLowerCase().includes('only') ||
-                        instruction.toLowerCase().includes('must') ||
-                        instruction.toLowerCase().includes('should') ||
-                        instruction.toLowerCase().includes('required');
-
-  if (!hasConstraints) {
-    suggestions.push("Add constraints or requirements to guide the response");
-    score -= 5;
-  }
-
-  // Ensure score doesn't go below 0
-  score = Math.max(0, score);
-
-  // Determine if valid (score >= 70)
-  const isValid = score >= 70 && errors.length === 0;
-
-  // Add positive feedback for good instructions
-  if (score >= 90) {
-    feedback.push("Excellent instruction quality!");
-  } else if (score >= 80) {
-    feedback.push("Good instruction with minor improvements possible");
-  } else if (score >= 70) {
-    feedback.push("Acceptable instruction but could be enhanced");
-  }
-
-  return {
-    isValid,
-    score,
-    feedback,
-    suggestions,
-    errors
-  };
+**Overall Assessment:** The instruction is acceptable but could benefit from the improvements mentioned above.`;
 }
 
 export async function handleTaskValidation(req: Request, res: Response) {
@@ -188,12 +123,13 @@ export async function handleTaskValidation(req: Request, res: Response) {
       });
     }
 
-    // Validate task structure
-    const validation = validateTaskStructure(taskData);
-
+    // Simple task validation - placeholder implementation
     return res.json({
       status: 'success',
-      validation
+      validation: {
+        isValid: true,
+        message: 'Task validation not implemented yet'
+      }
     });
 
   } catch (error) {
@@ -203,115 +139,4 @@ export async function handleTaskValidation(req: Request, res: Response) {
       message: error instanceof Error ? error.message : 'Task validation failed'
     });
   }
-}
-
-function validateTaskStructure(taskData: any): ValidationResponse {
-  const feedback: string[] = [];
-  const suggestions: string[] = [];
-  const errors: string[] = [];
-  let score = 100;
-
-  // Required fields check
-  const requiredFields = ['taskId', 'title', 'description', 'category'];
-  for (const field of requiredFields) {
-    if (!taskData[field] || taskData[field].toString().trim().length === 0) {
-      errors.push(`Missing required field: ${field}`);
-      score -= 20;
-    }
-  }
-
-  // Task ID format validation
-  if (taskData.taskId && !/^[A-Z]{2,4}-\d{3,4}$/.test(taskData.taskId)) {
-    errors.push("Task ID should follow format: ABC-123 or ABCD-1234");
-    score -= 10;
-  }
-
-  // Title validation
-  if (taskData.title) {
-    if (taskData.title.length < 10) {
-      errors.push("Title is too short (minimum 10 characters)");
-      score -= 10;
-    }
-    if (taskData.title.length > 100) {
-      feedback.push("Title is quite long - consider shortening");
-      score -= 5;
-    }
-  }
-
-  // Description validation
-  if (taskData.description) {
-    if (taskData.description.length < 50) {
-      errors.push("Description is too short (minimum 50 characters)");
-      score -= 15;
-    }
-  }
-
-  // JSON configuration validation
-  if (taskData.jsonConfig) {
-    try {
-      const config = typeof taskData.jsonConfig === 'string' 
-        ? JSON.parse(taskData.jsonConfig) 
-        : taskData.jsonConfig;
-      
-      if (!config.task_type) {
-        errors.push("JSON config missing task_type");
-        score -= 10;
-      }
-      
-      if (!config.instructions) {
-        errors.push("JSON config missing instructions");
-        score -= 10;
-      }
-      
-      if (!config.examples || !Array.isArray(config.examples) || config.examples.length === 0) {
-        errors.push("JSON config missing examples array");
-        score -= 15;
-      } else if (config.examples.length < 3) {
-        suggestions.push("Consider adding more examples (minimum 3 recommended)");
-        score -= 5;
-      }
-      
-    } catch (e) {
-      errors.push("Invalid JSON configuration format");
-      score -= 20;
-    }
-  } else {
-    errors.push("Missing JSON configuration");
-    score -= 25;
-  }
-
-  // Priority validation
-  const validPriorities = ['low', 'medium', 'high', 'urgent'];
-  if (taskData.priority && !validPriorities.includes(taskData.priority.toLowerCase())) {
-    errors.push("Invalid priority value");
-    score -= 5;
-  }
-
-  // Category validation
-  const validCategories = ['text-analysis', 'sentiment', 'classification', 'qa', 'dialogue', 'extraction'];
-  if (taskData.category && !validCategories.includes(taskData.category.toLowerCase())) {
-    suggestions.push("Consider using a standard category");
-    score -= 3;
-  }
-
-  // Ensure score doesn't go below 0
-  score = Math.max(0, score);
-
-  const isValid = score >= 70 && errors.length === 0;
-
-  if (score >= 90) {
-    feedback.push("Excellent task structure!");
-  } else if (score >= 80) {
-    feedback.push("Good task structure with minor improvements possible");
-  } else if (score >= 70) {
-    feedback.push("Acceptable task structure but could be enhanced");
-  }
-
-  return {
-    isValid,
-    score,
-    feedback,
-    suggestions,
-    errors
-  };
 }
