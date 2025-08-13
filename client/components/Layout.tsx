@@ -11,6 +11,12 @@ import {
   Clock,
   AlertCircle,
   Package,
+  Zap,
+  BarChart3,
+  Link as LinkIcon,
+  Database,
+  Network,
+  FileCheck,
 } from "lucide-react";
 
 interface LayoutProps {
@@ -21,6 +27,12 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Create Task", href: "/create", icon: PlusCircle },
   { name: "Review Queue", href: "/review", icon: ClipboardList },
+  { name: "Task Framework", href: "/framework", icon: Zap },
+  { name: "Task Tracker", href: "/tracker", icon: BarChart3 },
+  { name: "Chain Analyzer", href: "/chain-analyzer", icon: LinkIcon },
+  { name: "DB Connections", href: "/db-connections", icon: Database },
+  { name: "Interface Connections", href: "/interface-connections", icon: Network },
+  { name: "Instruction Validation", href: "/instruction-validation", icon: FileCheck },
   { name: "Calibration", href: "/calibration", icon: Target },
   { name: "Delivery Batch", href: "/delivery", icon: Package },
 ];

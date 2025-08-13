@@ -12,6 +12,12 @@ import CreateTask from "./pages/CreateTask";
 import ReviewQueue from "./pages/ReviewQueue";
 import Calibration from "./pages/Calibration";
 import DeliveryBatch from "./pages/DeliveryBatch";
+import TaskFramework from "./pages/TaskFramework";
+import TaskTracker from "./pages/TaskTracker";
+import ChainAnalyzer from "./pages/ChainAnalyzer";
+import DbConnections from "./pages/DbConnections";
+import InterfaceConnections from "./pages/InterfaceConnections";
+import InstructionValidation from "./pages/InstructionValidation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +36,12 @@ function App() {
               <Route path="/review" element={<ReviewQueue />} />
               <Route path="/calibration" element={<Calibration />} />
               <Route path="/delivery" element={<DeliveryBatch />} />
+              <Route path="/framework" element={<TaskFramework />} />
+              <Route path="/tracker" element={<TaskTracker />} />
+              <Route path="/chain-analyzer" element={<ChainAnalyzer />} />
+              <Route path="/db-connections" element={<DbConnections />} />
+              <Route path="/interface-connections" element={<InterfaceConnections />} />
+              <Route path="/instruction-validation" element={<InstructionValidation />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
