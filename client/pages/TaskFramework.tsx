@@ -1,41 +1,23 @@
 import { useState, useRef } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 import { 
+  Plus, 
   Play, 
-  Settings, 
-  Database, 
-  Zap, 
-  CheckCircle, 
-  Plus,
-  Download,
-  Upload,
-  Save,
-  Trash2,
+  Download, 
+  Upload, 
+  ChevronDown, 
+  ChevronUp, 
   BarChart3,
   Network,
-  ChevronDown,
-  ChevronUp,
   RefreshCw
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 interface FunctionInfo {
   name: string;
@@ -59,8 +41,7 @@ interface Action {
 }
 
 export default function TaskFramework() {
-  // Main state
-  const [environment, setEnvironment] = useState(""); // Domain like hr_payroll, finance
+  const [environment, setEnvironment] = useState("");
   const [interface_, setInterface] = useState("");
   const [functionsInfo, setFunctionsInfo] = useState<FunctionInfo[]>([]);
   const [actions, setActions] = useState<Action[]>([]);
@@ -71,17 +52,15 @@ export default function TaskFramework() {
   const [graphNodes, setGraphNodes] = useState<any[]>([]);
   const [graphEdges, setGraphEdges] = useState<any[]>([]);
   
-  // File input refs
+  const { toast } = useToast();
   const actionsFileInputRef = useRef<HTMLInputElement>(null);
   const graphFileInputRef = useRef<HTMLInputElement>(null);
-  
-  const { toast } = useToast();
 
-  const handleGoClick = async () => {
+  const loadApis = async () => {
     if (!environment || !interface_) {
       toast({
         title: "Error",
-        description: "Please enter both environment (domain) and interface",
+        description: "Please select both environment and interface",
         variant: "destructive",
       });
       return;
@@ -93,7 +72,6 @@ export default function TaskFramework() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Session-Id": "default",
         },
         body: JSON.stringify({
           environment,
@@ -102,17 +80,17 @@ export default function TaskFramework() {
       });
 
       const data: ApiResponse = await response.json();
-
+      
       if (data.status === "success" && data.functions_info) {
         setFunctionsInfo(data.functions_info);
         toast({
           title: "Success",
-          description: `Environment and Interface selected successfully! Loaded ${data.functions_info.length} APIs`,
+          description: `Loaded ${data.functions_info.length} APIs`,
         });
       } else {
         toast({
           title: "Error",
-          description: data.message || "Failed to load functions",
+          description: data.message || "Failed to load APIs",
           variant: "destructive",
         });
       }
@@ -131,7 +109,7 @@ export default function TaskFramework() {
     if (functionsInfo.length === 0) {
       toast({
         title: "Error",
-        description: "Please select an environment and interface first by clicking GO.",
+        description: "Please load APIs first",
         variant: "destructive",
       });
       return;
@@ -139,38 +117,18 @@ export default function TaskFramework() {
 
     const newAction: Action = {
       id: `action_${Date.now()}`,
-      name: "",
+      name: functionsInfo[0].name,
       parameters: {},
-      output: undefined
     };
 
-    setActions(prev => [...prev, newAction]);
+    setActions([...actions, newAction]);
   };
 
-  const removeAction = (actionId: string) => {
-    setActions(prev => prev.filter(action => action.id !== actionId));
-  };
-
-  const updateAction = (actionId: string, field: keyof Action, value: any) => {
-    setActions(prev => prev.map(action => 
-      action.id === actionId ? { ...action, [field]: value } : action
-    ));
-  };
-
-  const updateActionParameter = (actionId: string, paramName: string, value: string) => {
-    setActions(prev => prev.map(action => 
-      action.id === actionId 
-        ? { ...action, parameters: { ...action.parameters, [paramName]: value } }
-        : action
-    ));
-  };
-
-  const executeAction = async (actionId: string) => {
-    const action = actions.find(a => a.id === actionId);
-    if (!action || !action.name) {
+  const executeActions = async () => {
+    if (actions.length === 0) {
       toast({
         title: "Error",
-        description: "Please select an API for this action",
+        description: "No actions to execute",
         variant: "destructive",
       });
       return;
@@ -182,34 +140,32 @@ export default function TaskFramework() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Session-Id": "default",
         },
         body: JSON.stringify({
-          api_name: action.name,
-          parameters: action.parameters,
           environment,
+          interface: interface_,
+          actions,
         }),
       });
 
-      const data: ApiResponse = await response.json();
-
-      if (data.output) {
-        updateAction(actionId, 'output', data.output);
+      const data = await response.json();
+      
+      if (data.status === "success") {
         toast({
           title: "Success",
-          description: "API executed successfully",
+          description: "Actions executed successfully",
         });
       } else {
         toast({
           title: "Error",
-          description: data.message || "Execution failed",
+          description: data.message || "Failed to execute actions",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to execute API",
+        description: "Failed to connect to server",
         variant: "destructive",
       });
     } finally {
@@ -217,75 +173,19 @@ export default function TaskFramework() {
     }
   };
 
-  const exportActions = () => {
-    const exportData = actions.map(action => ({
-      name: action.name,
-      arguments: action.parameters,
-      output: action.output || ""
-    }));
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `actions_${environment}_interface_${interface_}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    toast({
-      title: "Success",
-      description: "Actions exported successfully",
-    });
-  };
-
-  const importActions = () => {
-    actionsFileInputRef.current?.click();
-  };
-
-  const handleActionsFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const importedActions = JSON.parse(e.target?.result as string);
-        const newActions: Action[] = importedActions.map((action: any, index: number) => ({
-          id: `imported_action_${Date.now()}_${index}`,
-          name: action.name || "",
-          parameters: action.arguments || {},
-          output: action.output
-        }));
-
-        setActions(prev => [...prev, ...newActions]);
-        toast({
-          title: "Success",
-          description: `Imported ${newActions.length} actions`,
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to parse JSON file",
-          variant: "destructive",
-        });
-      }
-    };
-    reader.readAsText(file);
-  };
-
   const populateNodesFromActions = () => {
     const nodes = actions.map((action, index) => ({
       id: action.id,
-      label: action.name || `Action ${index + 1}`,
+      label: action.name,
+      group: 'action',
       x: (index % 5) * 150,
       y: Math.floor(index / 5) * 100
     }));
     setGraphNodes(nodes);
+    
     toast({
       title: "Success",
-      description: `Populated ${nodes.length} nodes from actions`,
+      description: `Created ${nodes.length} nodes from actions`,
     });
   };
 
@@ -294,21 +194,16 @@ export default function TaskFramework() {
       nodes: graphNodes,
       edges: graphEdges
     };
-
-    const blob = new Blob([JSON.stringify(graphData, null, 2)], { type: 'application/json' });
+    
+    const blob = new Blob([JSON.stringify(graphData, null, 2)], {
+      type: 'application/json'
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `graph_${environment}_interface_${interface_}.json`;
-    document.body.appendChild(a);
+    a.download = 'graph.json';
     a.click();
-    document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
-    toast({
-      title: "Success",
-      description: "Graph exported successfully",
-    });
   };
 
   const importGraph = () => {
@@ -322,17 +217,67 @@ export default function TaskFramework() {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const graphData = JSON.parse(e.target?.result as string);
-        setGraphNodes(graphData.nodes || []);
-        setGraphEdges(graphData.edges || []);
-        toast({
-          title: "Success",
-          description: "Graph imported successfully",
-        });
+        const fileData = JSON.parse(e.target?.result as string);
+        
+        // Check if it's an interface file with APIs structure
+        if (fileData.APIs && fileData.edges) {
+          // Convert API interface format to graph format with better distribution
+          const apiNames = Object.keys(fileData.APIs);
+          const nodes = apiNames.map((apiName, index) => {
+            // Create a more spread out circular/spiral layout
+            const angle = (index * 2.4) % (2 * Math.PI); // Spiral angle
+            const radius = 80 + (Math.floor(index / 8) * 60); // Increasing radius for spiral
+            const centerX = 400;
+            const centerY = 250;
+            
+            return {
+              id: apiName,
+              label: apiName,
+              group: 'api',
+              x: centerX + Math.cos(angle) * radius,
+              y: centerY + Math.sin(angle) * radius,
+              inputs: fileData.APIs[apiName].inputs || [],
+              outputs: fileData.APIs[apiName].outputs || []
+            };
+          });
+          
+          const edges = fileData.edges.map((edge: any, index: number) => ({
+            id: `edge_${index}`,
+            from: edge.from,
+            to: edge.to,
+            label: edge.connections ? `${edge.connections.output} → ${edge.connections.input}` : '',
+            explicit: edge.explicit || false
+          }));
+          
+          setGraphNodes(nodes);
+          setGraphEdges(edges);
+          
+          toast({
+            title: "Success",
+            description: `Interface imported successfully! Loaded ${nodes.length} APIs and ${edges.length} connections`,
+          });
+        } 
+        // Check if it's a standard graph format
+        else if (fileData.nodes && fileData.edges) {
+          setGraphNodes(fileData.nodes || []);
+          setGraphEdges(fileData.edges || []);
+          toast({
+            title: "Success",
+            description: "Graph imported successfully",
+          });
+        }
+        // Try to handle other formats
+        else {
+          toast({
+            title: "Error",
+            description: "Unsupported file format. Expected either API interface format or standard graph format.",
+            variant: "destructive",
+          });
+        }
       } catch (error) {
         toast({
           title: "Error",
-          description: "Failed to parse graph JSON file",
+          description: "Failed to parse JSON file",
           variant: "destructive",
         });
       }
@@ -340,306 +285,239 @@ export default function TaskFramework() {
     reader.readAsText(file);
   };
 
-  const savePage = () => {
-    const pageState = {
-      environment,
-      interface: interface_,
-      actions,
-      graphNodes,
-      graphEdges,
-      timestamp: new Date().toISOString()
-    };
+  const importActions = () => {
+    actionsFileInputRef.current?.click();
+  };
 
-    const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Task Framework State - ${environment}</title>
-    <meta charset="UTF-8">
-</head>
-<body>
-    <h1>Task Framework State</h1>
-    <p>Environment: ${environment}</p>
-    <p>Interface: ${interface_}</p>
-    <p>Saved: ${new Date().toLocaleString()}</p>
-    <script>
-        window.taskFrameworkState = ${JSON.stringify(pageState, null, 2)};
-        console.log('Task Framework State:', window.taskFrameworkState);
-    </script>
-    <pre>${JSON.stringify(pageState, null, 2)}</pre>
-</body>
-</html>`;
-
-    const blob = new Blob([htmlContent], { type: 'text/html' });
+  const exportActions = () => {
+    const blob = new Blob([JSON.stringify(actions, null, 2)], {
+      type: 'application/json'
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `task_framework_${environment}_${Date.now()}.html`;
-    document.body.appendChild(a);
+    a.download = 'actions.json';
     a.click();
-    document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
-    toast({
-      title: "Success",
-      description: "Page state saved successfully",
-    });
   };
 
-  const getSelectedFunctionInfo = (functionName: string) => {
-    return functionsInfo.find(f => f.name === functionName);
+  const handleActionsFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const importedActions = JSON.parse(e.target?.result as string);
+        setActions(importedActions);
+        toast({
+          title: "Success",
+          description: `Imported ${importedActions.length} actions`,
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to parse actions JSON file",
+          variant: "destructive",
+        });
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Task Framework</h1>
-          <p className="text-muted-foreground">
-            Execute API functions within different domains and interfaces
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="flex items-center gap-2">
-            <Database className="w-4 h-4" />
-            Domain: {environment || "None"}
-          </Badge>
-          <Button variant="outline" onClick={savePage}>
-            <Save className="w-4 h-4 mr-2" />
-            Save Page
-          </Button>
-        </div>
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Task Framework
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Configure environments, load APIs, and manage action sequences with our comprehensive task framework.
+        </p>
       </div>
 
-      {/* Environment & Interface Setup - Matching Dashboard Design */}
-      <Card className="bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 shadow-xl">
-        <CardHeader className="text-center pb-2">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Task Framework
-          </CardTitle>
-          <CardDescription className="text-base">
-            Enter the domain (environment) and interface to load available APIs
+      {/* Environment and Interface Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Environment Configuration</CardTitle>
+          <CardDescription>
+            Select your environment and interface to load available APIs
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6 px-8 pb-8">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-3">
-              <Label htmlFor="environment" className="text-base font-semibold text-gray-700">
-                Environment (Domain)
-              </Label>
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl">
-                  🌍
-                </div>
-                <Input
-                  id="environment"
-                  placeholder="Enter environment name (e.g., hr_payroll, finance)"
-                  value={environment}
-                  onChange={(e) => setEnvironment(e.target.value)}
-                  className="pl-12 h-12 text-base border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-gray-50"
-                />
-              </div>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="environment">Environment</Label>
+              <Input
+                id="environment"
+                type="text"
+                placeholder="Enter environment name (e.g., finance)"
+                value={environment}
+                onChange={(e) => setEnvironment(e.target.value)}
+              />
             </div>
-            <div className="space-y-3">
-              <Label htmlFor="interface" className="text-base font-semibold text-gray-700">
-                Interface
-              </Label>
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl z-10">
-                  🔧
-                </div>
-                <Select value={interface_} onValueChange={setInterface}>
-                  <SelectTrigger className="pl-12 h-12 text-base border-2 border-gray-300 rounded-xl focus:border-blue-500 bg-gray-50">
-                    <SelectValue placeholder="Select an interface" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Interface 1</SelectItem>
-                    <SelectItem value="2">Interface 2</SelectItem>
-                    <SelectItem value="3">Interface 3</SelectItem>
-                    <SelectItem value="4">Interface 4</SelectItem>
-                    <SelectItem value="5">Interface 5</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="interface">Interface</Label>
+              <Select value={interface_} onValueChange={setInterface}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select interface" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Interface 1</SelectItem>
+                  <SelectItem value="2">Interface 2</SelectItem>
+                  <SelectItem value="3">Interface 3</SelectItem>
+                  <SelectItem value="4">Interface 4</SelectItem>
+                  <SelectItem value="5">Interface 5</SelectItem>
+                  <SelectItem value="6">Interface 6</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           
-          {/* GO Button - Matching Dashboard Style */}
-          <div className="flex justify-center pt-4">
-            <Button 
-              onClick={handleGoClick}
-              disabled={isLoading || !environment || !interface_}
-              className="w-1/4 min-w-[200px] h-16 text-xl font-bold uppercase tracking-wider bg-gradient-to-r from-cyan-400 to-purple-500 hover:from-cyan-500 hover:to-purple-600 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 rounded-2xl"
-              size="lg"
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <RefreshCw className="w-5 h-5 animate-spin" />
-                  Loading...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  🚀 GO
-                </div>
-              )}
-            </Button>
-          </div>
+          <Button onClick={loadApis} disabled={isLoading} className="w-full">
+            {isLoading ? "Loading..." : "Load APIs"}
+          </Button>
+          
+          {functionsInfo.length > 0 && (
+            <div className="text-center">
+              <Badge variant="secondary">
+                {functionsInfo.length} APIs loaded
+              </Badge>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Actions Section */}
+      {/* Actions Management */}
       {functionsInfo.length > 0 && (
-        <div className="space-y-6">
-          {/* Add Action Button - Large Circular like Dashboard */}
-          {actions.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <Button
-                onClick={addAction}
-                className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                size="lg"
-              >
-                <Plus className="w-8 h-8" />
+        <Card>
+          <CardHeader>
+            <CardTitle>Actions Management</CardTitle>
+            <CardDescription>
+              Configure and execute API actions in sequence
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Button onClick={addAction} variant="outline">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Action
               </Button>
-              <span className="text-lg font-medium text-gray-600">Add Action</span>
+              <Button onClick={executeActions} disabled={isLoading || actions.length === 0}>
+                <Play className="w-4 h-4 mr-2" />
+                Execute Actions
+              </Button>
+              <Button onClick={importActions} variant="outline">
+                <Upload className="w-4 h-4 mr-2" />
+                Import
+              </Button>
+              <Button onClick={exportActions} variant="outline">
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
             </div>
-          )}
-
-          {/* Actions List and Management */}
-          {actions.length > 0 && (
-            <div className="space-y-6">
-              {/* Actions List */}
+            
+            {actions.length > 0 && (
               <div className="space-y-4">
-                {actions.map((action) => {
-                  const functionInfo = getSelectedFunctionInfo(action.name);
-                  return (
-                    <Card key={action.id} className="border-l-4 border-l-blue-500">
-                      <CardContent className="pt-4">
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1 space-y-2">
-                              <Label>API Function</Label>
-                              <Select 
-                                value={action.name} 
-                                onValueChange={(value) => updateAction(action.id, 'name', value)}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select API function" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {functionsInfo.map((func) => (
-                                    <SelectItem key={func.name} value={func.name}>
-                                      {func.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => removeAction(action.id)}
-                              className="ml-4"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-
-                          {functionInfo && (
-                            <div className="space-y-3">
-                              <div className="text-sm text-muted-foreground">
-                                {functionInfo.description}
-                              </div>
-                              
-                              {/* Parameters */}
-                              {Object.keys(functionInfo.parameters).length > 0 && (
-                                <div className="space-y-2">
-                                  <Label>Parameters</Label>
-                                  <div className="grid gap-2 md:grid-cols-2">
-                                    {Object.entries(functionInfo.parameters).map(([paramName, paramInfo]) => (
-                                      <div key={paramName} className="space-y-1">
-                                        <Label className="text-xs">
-                                          {paramName}
-                                          {functionInfo.required.includes(paramName) && (
-                                            <span className="text-red-500 ml-1">*</span>
-                                          )}
-                                        </Label>
-                                        <Input
-                                          placeholder={`Enter ${paramName}`}
-                                          value={action.parameters[paramName] || ""}
-                                          onChange={(e) => updateActionParameter(action.id, paramName, e.target.value)}
-                                          size="sm"
-                                        />
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Execute Button */}
-                              <div className="flex gap-2">
-                                <Button 
-                                  onClick={() => executeAction(action.id)}
-                                  disabled={isLoading}
-                                  size="sm"
-                                >
-                                  <Play className="w-4 h-4 mr-2" />
-                                  Execute
-                                </Button>
-                              </div>
-
-                              {/* Output */}
-                              {action.output && (
-                                <div className="space-y-2">
-                                  <Label>Output</Label>
-                                  <Textarea
-                                    value={JSON.stringify(action.output, null, 2)}
-                                    readOnly
-                                    className="min-h-[100px] font-mono text-xs"
+                {actions.map((action, index) => (
+                  <Card key={action.id}>
+                    <CardContent className="pt-4">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-semibold">Action {index + 1}</h4>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setActions(actions.filter(a => a.id !== action.id))}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label>API Function</Label>
+                          <Select
+                            value={action.name}
+                            onValueChange={(value) => {
+                              const updatedActions = actions.map(a =>
+                                a.id === action.id ? { ...a, name: value, parameters: {} } : a
+                              );
+                              setActions(updatedActions);
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {functionsInfo.map((func) => (
+                                <SelectItem key={func.name} value={func.name}>
+                                  {func.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {/* Parameters */}
+                        {(() => {
+                          const selectedFunction = functionsInfo.find(f => f.name === action.name);
+                          if (!selectedFunction) return null;
+                          
+                          return (
+                            <div className="space-y-2">
+                              <Label>Parameters</Label>
+                              {Object.entries(selectedFunction.parameters).map(([paramName, paramInfo]) => (
+                                <div key={paramName} className="space-y-1">
+                                  <Label className="text-sm">
+                                    {paramName}
+                                    {selectedFunction.required.includes(paramName) && (
+                                      <span className="text-red-500 ml-1">*</span>
+                                    )}
+                                  </Label>
+                                  <Input
+                                    placeholder={`Enter ${paramName}`}
+                                    value={action.parameters[paramName] || ""}
+                                    onChange={(e) => {
+                                      const updatedActions = actions.map(a =>
+                                        a.id === action.id
+                                          ? {
+                                              ...a,
+                                              parameters: {
+                                                ...a.parameters,
+                                                [paramName]: e.target.value
+                                              }
+                                            }
+                                          : a
+                                      );
+                                      setActions(updatedActions);
+                                    }}
                                   />
                                 </div>
-                              )}
+                              ))}
                             </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                          );
+                        })()}
+                        
+                        {action.output && (
+                          <div className="space-y-2">
+                            <Label>Output</Label>
+                            <Textarea
+                              value={JSON.stringify(action.output, null, 2)}
+                              readOnly
+                              className="min-h-[100px] font-mono text-xs"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-
-              {/* Add Another Action Button + Import/Export - Dashboard Style */}
-              <div className="flex flex-col items-center space-y-6">
-                {/* Add Action Button */}
-                <div className="flex flex-col items-center space-y-2">
-                  <Button
-                    onClick={addAction}
-                    className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                  >
-                    <Plus className="w-6 h-6" />
-                  </Button>
-                  <span className="text-sm font-medium text-gray-600">Add Action</span>
-                </div>
-
-                {/* Import/Export Buttons - Dashboard Style */}
-                <div className="flex gap-4">
-                  <Button 
-                    onClick={importActions} 
-                    className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
-                  >
-                    Import Actions
-                  </Button>
-                  <Button 
-                    onClick={exportActions} 
-                    className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
-                  >
-                    Export Actions
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Graph Editor Section */}
@@ -680,14 +558,260 @@ export default function TaskFramework() {
               </div>
 
               {/* Graph Visualization Area */}
-              <div className="border rounded-lg p-4 min-h-[300px] bg-muted/10">
-                <div className="text-center text-muted-foreground">
-                  Graph visualization area
-                  <br />
-                  <span className="text-sm">
-                    Nodes: {graphNodes.length} | Edges: {graphEdges.length}
-                  </span>
-                </div>
+              <div className="border rounded-lg p-4 min-h-[500px] bg-muted/10">
+                {graphNodes.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-sm">Graph Visualization</h4>
+                      <span className="text-sm text-muted-foreground">
+                        Nodes: {graphNodes.length} | Edges: {graphEdges.length}
+                      </span>
+                    </div>
+                    
+                    {/* Improved Network Graph Container */}
+                    <div className="w-full h-[600px] border-2 border-gray-200 rounded-xl bg-white shadow-lg relative overflow-hidden">
+                      {/* Graph Info Header */}
+                      <div className="absolute top-4 right-4 z-20 bg-white/95 backdrop-blur-sm rounded-lg px-4 py-2 shadow-md border">
+                        <div className="text-sm font-medium text-gray-700">
+                          📊 {graphNodes.length} APIs • {graphEdges.length} connections
+                        </div>
+                      </div>
+                      
+                      {/* Graph Canvas */}
+                      <div className="w-full h-full relative" style={{ 
+                        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                        backgroundImage: `
+                          radial-gradient(circle at 25px 25px, #cbd5e1 2px, transparent 2px),
+                          radial-gradient(circle at 75px 75px, #cbd5e1 1px, transparent 1px)
+                        `,
+                        backgroundSize: '100px 100px, 50px 50px'
+                      }}>
+                        
+                        {/* SVG for connections */}
+                        <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
+                          <defs>
+                            <marker
+                              id="arrowhead"
+                              markerWidth="10"
+                              markerHeight="10"
+                              refX="8"
+                              refY="3"
+                              orient="auto"
+                            >
+                              <path d="M0,0 L0,6 L9,3 z" fill="#4f46e5" />
+                            </marker>
+                          </defs>
+                          
+                          {/* Render connections */}
+                          {graphEdges.map((edge, index) => {
+                            const fromNode = graphNodes.find(n => n.id === edge.from);
+                            const toNode = graphNodes.find(n => n.id === edge.to);
+                            
+                            if (!fromNode || !toNode) return null;
+                            
+                            // Calculate connection line
+                            const dx = toNode.x - fromNode.x;
+                            const dy = toNode.y - fromNode.y;
+                            const length = Math.sqrt(dx * dx + dy * dy);
+                            const unitX = dx / length;
+                            const unitY = dy / length;
+                            
+                            // Adjust for node size (50px radius)
+                            const startX = fromNode.x + unitX * 50;
+                            const startY = fromNode.y + unitY * 50;
+                            const endX = toNode.x - unitX * 50;
+                            const endY = toNode.y - unitY * 50;
+                            
+                            const isExplicit = edge.explicit;
+                            const strokeColor = isExplicit ? "#10b981" : "#6366f1";
+                            
+                            return (
+                              <g key={edge.id || `edge_${index}`}>
+                                {/* Connection line */}
+                                <line
+                                  x1={startX}
+                                  y1={startY}
+                                  x2={endX}
+                                  y2={endY}
+                                  stroke={strokeColor}
+                                  strokeWidth="3"
+                                  markerEnd="url(#arrowhead)"
+                                  opacity="0.8"
+                                  className="hover:stroke-width-4 transition-all"
+                                />
+                                
+                                {/* Connection label */}
+                                {edge.label && (
+                                  <g>
+                                    <rect
+                                      x={(startX + endX) / 2 - 50}
+                                      y={(startY + endY) / 2 - 10}
+                                      width="100"
+                                      height="20"
+                                      fill="white"
+                                      stroke={strokeColor}
+                                      strokeWidth="1"
+                                      rx="10"
+                                      opacity="0.95"
+                                    />
+                                    <text
+                                      x={(startX + endX) / 2}
+                                      y={(startY + endY) / 2 + 4}
+                                      textAnchor="middle"
+                                      fontSize="10"
+                                      fill={strokeColor}
+                                      fontWeight="600"
+                                    >
+                                      {edge.label.length > 15 ? edge.label.substring(0, 15) + '...' : edge.label}
+                                    </text>
+                                  </g>
+                                )}
+                              </g>
+                            );
+                          })}
+                        </svg>
+
+                        {/* Render nodes as HTML elements for better interactivity */}
+                        <div className="absolute inset-0" style={{ zIndex: 2 }}>
+                          {graphNodes.map((node, index) => {
+                            const nodeLabel = node.label || node.id || `Node ${index + 1}`;
+                            const displayName = nodeLabel.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+                            const shortName = displayName.length > 20 ? displayName.substring(0, 20) + '...' : displayName;
+                            
+                            return (
+                              <div
+                                key={node.id || index}
+                                className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-move group"
+                                style={{
+                                  left: `${node.x}px`,
+                                  top: `${node.y}px`,
+                                }}
+                                title={`${nodeLabel}\nInputs: ${node.inputs?.length || 0}\nOutputs: ${node.outputs?.length || 0}`}
+                              >
+                                {/* Node container */}
+                                <div className="relative">
+                                  {/* Glow effect */}
+                                  <div className="absolute inset-0 w-24 h-24 bg-blue-400 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-lg"></div>
+                                  
+                                  {/* Main node circle */}
+                                  <div className="relative w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full border-4 border-white shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-300 flex items-center justify-center">
+                                    {/* Node text */}
+                                    <div className="text-center px-2">
+                                      <div className="text-white font-bold text-xs leading-tight">
+                                        {shortName.split(' ').slice(0, 2).map((word, i) => (
+                                          <div key={i} className="truncate">{word}</div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    
+                                    {/* API count badge */}
+                                    {node.inputs && node.outputs && (
+                                      <div className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold border-2 border-white shadow-md">
+                                        {node.inputs.length + node.outputs.length}
+                                      </div>
+                                    )}
+                                  </div>
+                                  
+                                  {/* Hover tooltip */}
+                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 bg-gray-900 text-white px-3 py-2 rounded-lg shadow-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                                    <div className="font-semibold">{nodeLabel}</div>
+                                    {node.group && <div className="text-gray-300 text-xs">Type: {node.group}</div>}
+                                    {node.inputs && <div className="text-green-300 text-xs">📥 {node.inputs.length} inputs</div>}
+                                    {node.outputs && <div className="text-orange-300 text-xs">📤 {node.outputs.length} outputs</div>}
+                                    {/* Tooltip arrow */}
+                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900"></div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Node Details Below Graph */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h5 className="font-semibold text-sm text-gray-700">API Details</h5>
+                        <Badge variant="secondary" className="text-xs">
+                          {graphNodes.length} APIs loaded
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[200px] overflow-y-auto">
+                        {graphNodes.map((node, index) => (
+                          <div 
+                            key={node.id || index} 
+                            className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1">
+                                <div className="font-semibold text-sm text-blue-600 truncate mb-1">
+                                  {node.label || node.id || `Node ${index + 1}`}
+                                </div>
+                                {node.group && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {node.group}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="w-3 h-3 rounded-full bg-blue-500 flex-shrink-0 ml-2"></div>
+                            </div>
+                            
+                            {/* API Input/Output Info */}
+                            {node.inputs && node.outputs && (
+                              <div className="flex justify-between text-xs text-gray-500 mt-2">
+                                <span className="flex items-center gap-1">
+                                  <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                                  {node.inputs.length} inputs
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+                                  {node.outputs.length} outputs
+                                </span>
+                              </div>
+                            )}
+                            
+                            {/* Position Info */}
+                            {node.x !== undefined && node.y !== undefined && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                Position: ({Math.round(node.x)}, {Math.round(node.y)})
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Connection Summary */}
+                      {graphEdges.length > 0 && (
+                        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                          <h6 className="font-medium text-sm text-gray-700 mb-2">Connection Summary</h6>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                              {graphEdges.filter(e => e.explicit).length} explicit
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              <div className="w-2 h-2 rounded-full bg-blue-500 mr-1"></div>
+                              {graphEdges.filter(e => !e.explicit).length} implicit
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              Total: {graphEdges.length} connections
+                            </Badge>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                    <BarChart3 className="w-12 h-12 mb-4 text-muted-foreground/50" />
+                    <p className="text-sm">No graph data loaded</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">
+                      Import a graph file or populate nodes from actions to get started
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           )}

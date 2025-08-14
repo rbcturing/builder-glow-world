@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 type UtilityType = 'policy-creation' | 'api-implementation' | 'database-seeding' | 'scenario-realism';
 
 interface UtilityData {
+  status: string;
   initial_prompt?: string;
   example_policies?: string;
   example_apis?: string;
@@ -85,14 +86,18 @@ export default function DBConnections() {
 
       const data: UtilityData = await response.json();
       
-      if (data.initial_prompt) {
-        setInitialPrompt(data.initial_prompt);
-      }
-      if (data.example_policies) {
-        setExamplePolicies(data.example_policies);
-      }
-      if (data.example_apis) {
-        setExampleApis(data.example_apis);
+      if (data.status === 'success') {
+        if (data.initial_prompt) {
+          setInitialPrompt(data.initial_prompt);
+        }
+        if (data.example_policies) {
+          setExamplePolicies(data.example_policies);
+        }
+        if (data.example_apis) {
+          setExampleApis(data.example_apis);
+        }
+      } else {
+        console.error('Error loading utility data:', data);
       }
       
     } catch (error) {

@@ -1,0 +1,1145 @@
+{
+    "APIs": {
+        "get_agent_info": {
+            "inputs": [
+                {
+                    "name": "agent_id",
+                    "required": true
+                },
+                {
+                    "name": "email",
+                    "required": true
+                },
+                {
+                    "name": "licence_number",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "agent_id"
+                },
+                {
+                    "name": "branch_id"
+                },
+                {
+                    "name": "first_name"
+                },
+                {
+                    "name": "last_name"
+                },
+                {
+                    "name": "email"
+                },
+                {
+                    "name": "phone"
+                },
+                {
+                    "name": "licence_number"
+                },
+                {
+                    "name": "role"
+                },
+                {
+                    "name": "status"
+                }
+            ]
+        },
+        "update_real_estate_agency": {
+            "inputs": [
+                {
+                    "name": "agency_id",
+                    "required": true
+                },
+                {
+                    "name": "name",
+                    "required": true
+                },
+                {
+                    "name": "phone",
+                    "required": true
+                },
+                {
+                    "name": "email",
+                    "required": true
+                },
+                {
+                    "name": "head_manager_id",
+                    "required": true
+                },
+                {
+                    "name": "status",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "agency_id"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "phone"
+                },
+                {
+                    "name": "email"
+                },
+                {
+                    "name": "head_manager_id"
+                },
+                {
+                    "name": "status"
+                }
+            ]
+        },
+        "get_branch_and_agency_of_agent": {
+            "inputs": [
+                {
+                    "name": "agent_id",
+                    "required": true
+                },
+                {
+                    "name": "email",
+                    "required": true
+                },
+                {
+                    "name": "licence_number",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "branch_id"
+                },
+                {
+                    "name": "branch_name"
+                },
+                {
+                    "name": "agency_id"
+                },
+                {
+                    "name": "agency_name"
+                },
+                {
+                    "name": "location_id"
+                },
+                {
+                    "name": "manager_id"
+                },
+                {
+                    "name": "branch_status"
+                }
+            ]
+        },
+        "update_branch_manager": {
+            "inputs": [
+                {
+                    "name": "branch_id",
+                    "required": true
+                },
+                {
+                    "name": "name",
+                    "required": true
+                },
+                {
+                    "name": "new_manager_id",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "branch_id"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "new_manager_id"
+                }
+            ]
+        },
+        "create_agent": {
+            "inputs": [
+                {
+                    "name": "branch_id",
+                    "required": true
+                },
+                {
+                    "name": "first_name",
+                    "required": true
+                },
+                {
+                    "name": "last_name",
+                    "required": true
+                },
+                {
+                    "name": "email",
+                    "required": true
+                },
+                {
+                    "name": "phone",
+                    "required": true
+                },
+                {
+                    "name": "licence_number",
+                    "required": true
+                },
+                {
+                    "name": "role",
+                    "required": true
+                },
+                {
+                    "name": "status",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "agent_id"
+                },
+                {
+                    "name": "success"
+                }
+            ]
+        },
+        "list_branches": {
+            "inputs": [
+                {
+                    "name": "agency_id",
+                    "required": true
+                },
+                {
+                    "name": "location_ids_list",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "branch_id"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "agency_id"
+                },
+                {
+                    "name": "location_id"
+                },
+                {
+                    "name": "manager_id"
+                },
+                {
+                    "name": "status"
+                }
+            ]
+        },
+        "list_locations": {
+            "inputs": [
+                {
+                    "name": "city",
+                    "required": true
+                },
+                {
+                    "name": "building_name",
+                    "required": true
+                },
+                {
+                    "name": "street_name",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "location_id"
+                },
+                {
+                    "name": "house_number"
+                },
+                {
+                    "name": "street_name"
+                },
+                {
+                    "name": "building_name"
+                },
+                {
+                    "name": "city"
+                },
+                {
+                    "name": "state"
+                }
+            ]
+        },
+        "fetch_listing_info": {
+            "inputs": [
+                {
+                    "name": "listing_id",
+                    "required": true
+                },
+                {
+                    "name": "agent_id",
+                    "required": true
+                },
+                {
+                    "name": "property_id",
+                    "required": true
+                },
+                {
+                    "name": "list_price",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "listing_id"
+                },
+                {
+                    "name": "property_id"
+                },
+                {
+                    "name": "listing_type"
+                },
+                {
+                    "name": "agent_id"
+                },
+                {
+                    "name": "list_price"
+                },
+                {
+                    "name": "lease_term_months"
+                },
+                {
+                    "name": "security_deposit"
+                },
+                {
+                    "name": "listing_status"
+                },
+                {
+                    "name": "agent_commission_percentage"
+                },
+                {
+                    "name": "listed_date"
+                }
+            ]
+        },
+        "fetch_lease_info": {
+            "inputs": [
+                {
+                    "name": "lease_id",
+                    "required": true
+                },
+                {
+                    "name": "listing_id",
+                    "required": true
+                },
+                {
+                    "name": "client_id",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "lease_id"
+                },
+                {
+                    "name": "listing_id"
+                },
+                {
+                    "name": "client_id"
+                },
+                {
+                    "name": "lease_status"
+                },
+                {
+                    "name": "start_date"
+                },
+                {
+                    "name": "end_date"
+                },
+                {
+                    "name": "monthly_rent"
+                },
+                {
+                    "name": "document_id"
+                },
+                {
+                    "name": "security_deposit"
+                },
+                {
+                    "name": "rent_due_day"
+                }
+            ]
+        },
+        "get_sale_info": {
+            "inputs": [
+                {
+                    "name": "sale_id",
+                    "required": true
+                },
+                {
+                    "name": "listing_id",
+                    "required": true
+                },
+                {
+                    "name": "client_id",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "sale_id"
+                },
+                {
+                    "name": "listing_id"
+                },
+                {
+                    "name": "client_id"
+                },
+                {
+                    "name": "sale_status"
+                },
+                {
+                    "name": "document_id"
+                },
+                {
+                    "name": "sale_price"
+                },
+                {
+                    "name": "sale_date"
+                }
+            ]
+        },
+        "get_latest_payment_info": {
+            "inputs": [
+                {
+                    "name": "sale_id",
+                    "required": true
+                },
+                {
+                    "name": "lease_id",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "payment_id"
+                },
+                {
+                    "name": "amount"
+                },
+                {
+                    "name": "due_date"
+                },
+                {
+                    "name": "payment_date"
+                },
+                {
+                    "name": "payment_status"
+                },
+                {
+                    "name": "payment_method"
+                },
+                {
+                    "name": "document_id"
+                }
+            ]
+        },
+        "find_client": {
+            "inputs": [
+                {
+                    "name": "client_id",
+                    "required": true
+                },
+                {
+                    "name": "email",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "client_id"
+                },
+                {
+                    "name": "first_name"
+                },
+                {
+                    "name": "last_name"
+                },
+                {
+                    "name": "email"
+                },
+                {
+                    "name": "phone"
+                },
+                {
+                    "name": "client_type"
+                },
+                {
+                    "name": "company_name"
+                }
+            ]
+        },
+        "fetch_document": {
+            "inputs": [
+                {
+                    "name": "document_id",
+                    "required": true
+                },
+                {
+                    "name": "uploaded_by_agent_id",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "document_id"
+                },
+                {
+                    "name": "doc_type"
+                },
+                {
+                    "name": "filetype"
+                },
+                {
+                    "name": "uploaded_by_agent_id"
+                },
+                {
+                    "name": "listing_id"
+                },
+                {
+                    "name": "lease_id"
+                },
+                {
+                    "name": "sale_id"
+                },
+                {
+                    "name": "client_id"
+                },
+                {
+                    "name": "request_id"
+                },
+                {
+                    "name": "floor_id"
+                },
+                {
+                    "name": "payment_id"
+                }
+            ]
+        },
+        "create_new_listing": {
+            "inputs": [
+                {
+                    "name": "property_id",
+                    "required": true
+                },
+                {
+                    "name": "listing_type",
+                    "required": true
+                },
+                {
+                    "name": "agent_id",
+                    "required": true
+                },
+                {
+                    "name": "list_price",
+                    "required": true
+                },
+                {
+                    "name": "lease_term_months",
+                    "required": true
+                },
+                {
+                    "name": "security_deposit",
+                    "required": true
+                },
+                {
+                    "name": "agent_commission_percentage",
+                    "required": true
+                },
+                {
+                    "name": "listed_date",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "listing_id"
+                },
+                {
+                    "name": "success"
+                }
+            ]
+        },
+        "create_new_sale": {
+            "inputs": [
+                {
+                    "name": "listing_id",
+                    "required": true
+                },
+                {
+                    "name": "client_id",
+                    "required": true
+                },
+                {
+                    "name": "sale_status",
+                    "required": true
+                },
+                {
+                    "name": "document_id",
+                    "required": true
+                },
+                {
+                    "name": "sale_price",
+                    "required": true
+                },
+                {
+                    "name": "sale_date",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "sale_id"
+                },
+                {
+                    "name": "success"
+                }
+            ]
+        },
+        "create_new_sale_payment": {
+            "inputs": [
+                {
+                    "name": "amount",
+                    "required": true
+                },
+                {
+                    "name": "payment_date",
+                    "required": true
+                },
+                {
+                    "name": "payment_status",
+                    "required": true
+                },
+                {
+                    "name": "payment_method",
+                    "required": true
+                },
+                {
+                    "name": "document_id",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "payment_id"
+                },
+                {
+                    "name": "success"
+                }
+            ]
+        },
+        "upload_sale_agreement": {
+            "inputs": [
+                {
+                    "name": "filetype",
+                    "required": true
+                },
+                {
+                    "name": "uploaded_by_agent_id",
+                    "required": true
+                },
+                {
+                    "name": "listing_id",
+                    "required": true
+                },
+                {
+                    "name": "client_id",
+                    "required": true
+                },
+                {
+                    "name": "payment_id",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "document_id"
+                },
+                {
+                    "name": "success"
+                }
+            ]
+        },
+        "change_listing_status": {
+            "inputs": [
+                {
+                    "name": "listing_id",
+                    "required": true
+                },
+                {
+                    "name": "new_status",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "success"
+                }
+            ]
+        },
+        "change_sale_status": {
+            "inputs": [
+                {
+                    "name": "sale_id",
+                    "required": true
+                },
+                {
+                    "name": "new_status",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "success"
+                }
+            ]
+        },
+        "upload_sale_payment_proof_doc": {
+            "inputs": [
+                {
+                    "name": "filetype",
+                    "required": true
+                },
+                {
+                    "name": "upload_by_agent_id",
+                    "required": true
+                },
+                {
+                    "name": "sale_id",
+                    "required": true
+                },
+                {
+                    "name": "client_id",
+                    "required": true
+                },
+                {
+                    "name": "payment_id",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "document_id"
+                },
+                {
+                    "name": "success"
+                }
+            ]
+        },
+        "get_property_info": {
+            "inputs": [
+                {
+                    "name": "property_id",
+                    "required": true
+                },
+                {
+                    "name": "location_id",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "property_id"
+                },
+                {
+                    "name": "branch_id"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "type"
+                },
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "year_built"
+                },
+                {
+                    "name": "area_sqft"
+                },
+                {
+                    "name": "location_id"
+                }
+            ]
+        },
+        "create_new_property": {
+            "inputs": [
+                {
+                    "name": "branch_id",
+                    "required": true
+                },
+                {
+                    "name": "name",
+                    "required": true
+                },
+                {
+                    "name": "type",
+                    "required": true
+                },
+                {
+                    "name": "status",
+                    "required": true
+                },
+                {
+                    "name": "year_built",
+                    "required": true
+                },
+                {
+                    "name": "area_sqft",
+                    "required": true
+                },
+                {
+                    "name": "location_id",
+                    "required": true
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "property_id"
+                },
+                {
+                    "name": "success"
+                }
+            ]
+        }
+    },
+    "edges": [
+        {
+            "from": "get_agent_info",
+            "to": "get_branch_and_agency_of_agent",
+            "connections": {
+                "output": "agent_id",
+                "input": "agent_id"
+            },
+            "explicit": true
+        },
+        {
+            "from": "get_agent_info",
+            "to": "create_new_listing",
+            "connections": {
+                "output": "agent_id",
+                "input": "agent_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "get_agent_info",
+            "to": "fetch_listing_info",
+            "connections": {
+                "output": "agent_id",
+                "input": "agent_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "get_branch_and_agency_of_agent",
+            "to": "update_real_estate_agency",
+            "connections": {
+                "output": "agency_id",
+                "input": "agency_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "get_branch_and_agency_of_agent",
+            "to": "update_branch_manager",
+            "connections": {
+                "output": "branch_id",
+                "input": "branch_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "get_branch_and_agency_of_agent",
+            "to": "list_branches",
+            "connections": {
+                "output": "agency_id",
+                "input": "agency_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "get_branch_and_agency_of_agent",
+            "to": "create_agent",
+            "connections": {
+                "output": "branch_id",
+                "input": "branch_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "list_branches",
+            "to": "create_new_property",
+            "connections": {
+                "output": "branch_id",
+                "input": "branch_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "list_branches",
+            "to": "get_property_info",
+            "connections": {
+                "output": "location_id",
+                "input": "location_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "list_locations",
+            "to": "list_branches",
+            "connections": {
+                "output": "location_id",
+                "input": "location_ids_list"
+            },
+            "explicit": false
+        },
+        {
+            "from": "list_locations",
+            "to": "create_new_property",
+            "connections": {
+                "output": "location_id",
+                "input": "location_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "list_locations",
+            "to": "get_property_info",
+            "connections": {
+                "output": "location_id",
+                "input": "location_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "create_new_property",
+            "to": "get_property_info",
+            "connections": {
+                "output": "property_id",
+                "input": "property_id"
+            },
+            "explicit": true
+        },
+        {
+            "from": "create_new_property",
+            "to": "create_new_listing",
+            "connections": {
+                "output": "property_id",
+                "input": "property_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "get_property_info",
+            "to": "create_new_listing",
+            "connections": {
+                "output": "property_id",
+                "input": "property_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "create_new_listing",
+            "to": "fetch_listing_info",
+            "connections": {
+                "output": "listing_id",
+                "input": "listing_id"
+            },
+            "explicit": true
+        },
+        {
+            "from": "create_new_listing",
+            "to": "change_listing_status",
+            "connections": {
+                "output": "listing_id",
+                "input": "listing_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "fetch_listing_info",
+            "to": "fetch_lease_info",
+            "connections": {
+                "output": "listing_id",
+                "input": "listing_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "fetch_listing_info",
+            "to": "get_sale_info",
+            "connections": {
+                "output": "listing_id",
+                "input": "listing_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "fetch_listing_info",
+            "to": "create_new_sale",
+            "connections": {
+                "output": "listing_id",
+                "input": "listing_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "find_client",
+            "to": "fetch_lease_info",
+            "connections": {
+                "output": "client_id",
+                "input": "client_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "find_client",
+            "to": "get_sale_info",
+            "connections": {
+                "output": "client_id",
+                "input": "client_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "find_client",
+            "to": "create_new_sale",
+            "connections": {
+                "output": "client_id",
+                "input": "client_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "create_new_sale",
+            "to": "get_sale_info",
+            "connections": {
+                "output": "sale_id",
+                "input": "sale_id"
+            },
+            "explicit": true
+        },
+        {
+            "from": "create_new_sale",
+            "to": "change_sale_status",
+            "connections": {
+                "output": "sale_id",
+                "input": "sale_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "create_new_sale",
+            "to": "get_latest_payment_info",
+            "connections": {
+                "output": "sale_id",
+                "input": "sale_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "fetch_lease_info",
+            "to": "get_latest_payment_info",
+            "connections": {
+                "output": "lease_id",
+                "input": "lease_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "fetch_lease_info",
+            "to": "fetch_document",
+            "connections": {
+                "output": "document_id",
+                "input": "document_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "get_sale_info",
+            "to": "get_latest_payment_info",
+            "connections": {
+                "output": "sale_id",
+                "input": "sale_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "get_sale_info",
+            "to": "fetch_document",
+            "connections": {
+                "output": "document_id",
+                "input": "document_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "create_new_sale_payment",
+            "to": "get_latest_payment_info",
+            "connections": {
+                "output": "payment_id",
+                "input": "payment_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "create_new_sale_payment",
+            "to": "upload_sale_agreement",
+            "connections": {
+                "output": "payment_id",
+                "input": "payment_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "create_new_sale_payment",
+            "to": "upload_sale_payment_proof_doc",
+            "connections": {
+                "output": "payment_id",
+                "input": "payment_id"
+            },
+            "explicit": false
+        },
+        {
+            "from": "upload_sale_agreement",
+            "to": "fetch_document",
+            "connections": {
+                "output": "document_id",
+                "input": "document_id"
+            },
+            "explicit": true
+        },
+        {
+            "from": "upload_sale_payment_proof_doc",
+            "to": "fetch_document",
+            "connections": {
+                "output": "document_id",
+                "input": "document_id"
+            },
+            "explicit": true
+        },
+        {
+            "from": "get_latest_payment_info",
+            "to": "fetch_document",
+            "connections": {
+                "output": "document_id",
+                "input": "document_id"
+            },
+            "explicit": false
+        }
+    ]
+}
