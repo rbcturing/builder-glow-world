@@ -51,6 +51,9 @@ export default function TaskFramework() {
   const [showGraphEditor, setShowGraphEditor] = useState(false);
   const [graphNodes, setGraphNodes] = useState<any[]>([]);
   const [graphEdges, setGraphEdges] = useState<any[]>([]);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isDraggingNode, setIsDraggingNode] = useState(false);
   
   const { toast } = useToast();
   const actionsFileInputRef = useRef<HTMLInputElement>(null);
@@ -570,25 +573,99 @@ export default function TaskFramework() {
                     
                     {/* Improved Network Graph Container */}
                     <div className="w-full h-[600px] border-2 border-gray-200 rounded-xl bg-white shadow-lg relative overflow-hidden">
+                      {/* Zoom Controls */}
+                      <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-10 h-10 p-0 bg-white/95 backdrop-blur-sm shadow-md"
+                          onClick={() => setZoomLevel(prev => Math.min(prev + 0.2, 3))}
+                          title="Zoom In"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-10 h-10 p-0 bg-white/95 backdrop-blur-sm shadow-md"
+                          onClick={() => setZoomLevel(prev => Math.max(prev - 0.2, 0.3))}
+                          title="Zoom Out"
+                        >
+                          <span className="text-lg font-bold">−</span>
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-10 h-10 p-0 bg-white/95 backdrop-blur-sm shadow-md"
+                          onClick={() => {
+                            setZoomLevel(1);
+                            setPanOffset({ x: 0, y: 0 });
+                          }}
+                          title="Reset View"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                        </Button>
+                      </div>
+
                       {/* Graph Info Header */}
                       <div className="absolute top-4 right-4 z-20 bg-white/95 backdrop-blur-sm rounded-lg px-4 py-2 shadow-md border">
                         <div className="text-sm font-medium text-gray-700">
                           📊 {graphNodes.length} APIs • {graphEdges.length} connections
                         </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          Zoom: {Math.round(zoomLevel * 100)}%
+                        </div>
                       </div>
                       
                       {/* Graph Canvas */}
-                      <div className="w-full h-full relative" style={{ 
-                        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-                        backgroundImage: `
-                          radial-gradient(circle at 25px 25px, #cbd5e1 2px, transparent 2px),
-                          radial-gradient(circle at 75px 75px, #cbd5e1 1px, transparent 1px)
-                        `,
-                        backgroundSize: '100px 100px, 50px 50px'
-                      }}>
+                      <div 
+                        className="w-full h-full relative cursor-grab active:cursor-grabbing" 
+                        style={{ 
+                          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                          backgroundImage: `
+                            radial-gradient(circle at 25px 25px, #cbd5e1 2px, transparent 2px),
+                            radial-gradient(circle at 75px 75px, #cbd5e1 1px, transparent 1px)
+                          `,
+                          backgroundSize: '100px 100px, 50px 50px'
+                        }}
+                        onMouseDown={(e) => {
+                          // Only pan if clicking on empty canvas (not on nodes)
+                          if (e.target === e.currentTarget) {
+                            const startX = e.clientX - panOffset.x;
+                            const startY = e.clientY - panOffset.y;
+                            
+                            const handleMouseMove = (e: MouseEvent) => {
+                              setPanOffset({
+                                x: e.clientX - startX,
+                                y: e.clientY - startY
+                              });
+                            };
+                            
+                            const handleMouseUp = () => {
+                              document.removeEventListener('mousemove', handleMouseMove);
+                              document.removeEventListener('mouseup', handleMouseUp);
+                            };
+                            
+                            document.addEventListener('mousemove', handleMouseMove);
+                            document.addEventListener('mouseup', handleMouseUp);
+                          }
+                        }}
+                        onWheel={(e) => {
+                          e.preventDefault();
+                          const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                          setZoomLevel(prev => Math.max(0.3, Math.min(3, prev + delta)));
+                        }}
+                      >
                         
                         {/* SVG for connections */}
-                        <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
+                        <svg 
+                          className="absolute inset-0 w-full h-full" 
+                          style={{ 
+                            zIndex: 1,
+                            transform: `scale(${zoomLevel}) translate(${panOffset.x}px, ${panOffset.y}px)`,
+                            transformOrigin: 'center center'
+                          }}
+                        >
                           <defs>
                             <marker
                               id="arrowhead"
@@ -672,7 +749,14 @@ export default function TaskFramework() {
                         </svg>
 
                         {/* Render nodes as HTML elements for better interactivity */}
-                        <div className="absolute inset-0" style={{ zIndex: 2 }}>
+                        <div 
+                          className="absolute inset-0" 
+                          style={{ 
+                            zIndex: 2,
+                            transform: `scale(${zoomLevel}) translate(${panOffset.x}px, ${panOffset.y}px)`,
+                            transformOrigin: 'center center'
+                          }}
+                        >
                           {graphNodes.map((node, index) => {
                             const nodeLabel = node.label || node.id || `Node ${index + 1}`;
                             const displayName = nodeLabel.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
@@ -687,18 +771,28 @@ export default function TaskFramework() {
                                   top: `${node.y}px`,
                                 }}
                                 title={`${nodeLabel}\nInputs: ${node.inputs?.length || 0}\nOutputs: ${node.outputs?.length || 0}`}
-                                draggable={true}
-                                onDragStart={(e) => {
-                                  e.dataTransfer.setData('text/plain', node.id || index.toString());
-                                  e.dataTransfer.effectAllowed = 'move';
-                                }}
-                                onDrag={(e) => {
-                                  if (e.clientX === 0 && e.clientY === 0) return; // Ignore final drag event
+                                onMouseDown={(e) => {
+                                  e.stopPropagation(); // Prevent canvas panning when dragging nodes
+                                  e.preventDefault(); // Prevent default drag behavior
                                   
-                                  const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-                                  if (rect) {
-                                    const newX = e.clientX - rect.left;
-                                    const newY = e.clientY - rect.top;
+                                  const element = e.currentTarget as HTMLElement;
+                                  const startX = e.clientX;
+                                  const startY = e.clientY;
+                                  const startNodeX = node.x;
+                                  const startNodeY = node.y;
+                                  
+                                  // Add visual feedback
+                                  element.style.cursor = 'grabbing';
+                                  element.style.zIndex = '1000';
+                                  setIsDraggingNode(true);
+                                  
+                                  const handleMouseMove = (e: MouseEvent) => {
+                                    e.preventDefault();
+                                    const deltaX = (e.clientX - startX) / zoomLevel;
+                                    const deltaY = (e.clientY - startY) / zoomLevel;
+                                    
+                                    const newX = startNodeX + deltaX;
+                                    const newY = startNodeY + deltaY;
                                     
                                     // Update node position in real-time
                                     const updatedNodes = graphNodes.map(n => 
@@ -707,22 +801,26 @@ export default function TaskFramework() {
                                         : n
                                     );
                                     setGraphNodes(updatedNodes);
-                                  }
-                                }}
-                                onDragEnd={(e) => {
-                                  const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-                                  if (rect) {
-                                    const newX = Math.max(50, Math.min(rect.width - 50, e.clientX - rect.left));
-                                    const newY = Math.max(50, Math.min(rect.height - 50, e.clientY - rect.top));
+                                  };
+                                  
+                                  const handleMouseUp = (e: MouseEvent) => {
+                                    e.preventDefault();
+                                    setIsDraggingNode(false);
                                     
-                                    // Final position update with bounds checking
-                                    const updatedNodes = graphNodes.map(n => 
-                                      (n.id || graphNodes.indexOf(n).toString()) === (node.id || index.toString())
-                                        ? { ...n, x: newX, y: newY }
-                                        : n
-                                    );
-                                    setGraphNodes(updatedNodes);
-                                  }
+                                    // Reset visual feedback
+                                    element.style.cursor = 'grab';
+                                    element.style.zIndex = 'auto';
+                                    
+                                    // Clean up event listeners
+                                    document.removeEventListener('mousemove', handleMouseMove);
+                                    document.removeEventListener('mouseup', handleMouseUp);
+                                    document.removeEventListener('mouseleave', handleMouseUp);
+                                  };
+                                  
+                                  // Add event listeners
+                                  document.addEventListener('mousemove', handleMouseMove);
+                                  document.addEventListener('mouseup', handleMouseUp);
+                                  document.addEventListener('mouseleave', handleMouseUp); // Handle mouse leaving window
                                 }}
                               >
                                 {/* Node container */}
