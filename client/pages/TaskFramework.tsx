@@ -687,6 +687,43 @@ export default function TaskFramework() {
                                   top: `${node.y}px`,
                                 }}
                                 title={`${nodeLabel}\nInputs: ${node.inputs?.length || 0}\nOutputs: ${node.outputs?.length || 0}`}
+                                draggable={true}
+                                onDragStart={(e) => {
+                                  e.dataTransfer.setData('text/plain', node.id || index.toString());
+                                  e.dataTransfer.effectAllowed = 'move';
+                                }}
+                                onDrag={(e) => {
+                                  if (e.clientX === 0 && e.clientY === 0) return; // Ignore final drag event
+                                  
+                                  const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                                  if (rect) {
+                                    const newX = e.clientX - rect.left;
+                                    const newY = e.clientY - rect.top;
+                                    
+                                    // Update node position in real-time
+                                    const updatedNodes = graphNodes.map(n => 
+                                      (n.id || graphNodes.indexOf(n).toString()) === (node.id || index.toString())
+                                        ? { ...n, x: newX, y: newY }
+                                        : n
+                                    );
+                                    setGraphNodes(updatedNodes);
+                                  }
+                                }}
+                                onDragEnd={(e) => {
+                                  const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                                  if (rect) {
+                                    const newX = Math.max(50, Math.min(rect.width - 50, e.clientX - rect.left));
+                                    const newY = Math.max(50, Math.min(rect.height - 50, e.clientY - rect.top));
+                                    
+                                    // Final position update with bounds checking
+                                    const updatedNodes = graphNodes.map(n => 
+                                      (n.id || graphNodes.indexOf(n).toString()) === (node.id || index.toString())
+                                        ? { ...n, x: newX, y: newY }
+                                        : n
+                                    );
+                                    setGraphNodes(updatedNodes);
+                                  }
+                                }}
                               >
                                 {/* Node container */}
                                 <div className="relative">

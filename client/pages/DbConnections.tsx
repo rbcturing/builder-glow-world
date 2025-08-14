@@ -258,18 +258,16 @@ export default function DBConnections() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Initial Prompt */}
-            {selectedUtility !== 'scenario-realism' && (
-              <div className="space-y-2">
-                <Label className="text-base font-semibold">Initial Prompt</Label>
-                <Textarea
-                  value={initialPrompt}
-                  onChange={(e) => setInitialPrompt(e.target.value)}
-                  placeholder="Enter the initial prompt..."
-                  className="min-h-[120px] resize-none"
-                />
-              </div>
-            )}
+            {/* Initial Prompt - Show for ALL utilities including scenario-realism */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Initial Prompt</Label>
+              <Textarea
+                value={initialPrompt}
+                onChange={(e) => setInitialPrompt(e.target.value)}
+                placeholder="Enter the initial prompt..."
+                className="min-h-[120px] resize-none"
+              />
+            </div>
 
             {/* Database Schema */}
             <div className="space-y-2">
